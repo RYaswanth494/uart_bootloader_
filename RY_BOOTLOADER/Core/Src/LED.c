@@ -4,9 +4,9 @@
  *  Created on: Jun 26, 2025
  *      Author: maday
  */
+#include "RCC_CLOCK_DEFINES.h"
 #include"GPIO.h"
 #include"DEFINATIONS.h"
-#include"RCC_CLOCK.h"
 #include"main.h"
 void LED_INIT(){
 	 RCC_APB2ENR |= RCC_IOPBEN;
@@ -15,6 +15,6 @@ void LED_INIT(){
 }
 void TOGGLE_LED(){
     GPIOB_ODR |= (1 << 2);  // Set PB2 high
-    HAL_Delay(100);
+    for(int i=0;i<80000;i++);
     GPIOB_ODR &= ~(1 << 2); // Set PB2 low
-    HAL_Delay(100);}
+    for(int i=0;i<80000;i++);}
