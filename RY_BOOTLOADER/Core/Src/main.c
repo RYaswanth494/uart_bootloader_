@@ -1,11 +1,10 @@
-#include"RCC_DECLARATIONS.h"
-#include"GPIO.h"
 #include"RCC_CLOCK_DEFINES.h"
+#include"RCC_DECLARATIONS.h"
+#include"DEFINATIONS.h"
 #include"LED.h"
-//#include"LED.h"
 int main(){
-//	HAL_init();
-	RCC_SYSTEM_CLOCK_HSE();
+	RCC_SYSTEM_CLOCK_HSI();
+    SYSTEM_CLOCK_TEST();
 	LED_INIT();
 	while(1){
 		TOGGLE_LED();
