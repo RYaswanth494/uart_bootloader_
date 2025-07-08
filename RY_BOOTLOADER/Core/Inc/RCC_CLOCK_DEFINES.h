@@ -10,5 +10,5 @@
 
 #include<stdint.h>
 
-
+#define RCC_BASE        0x40021000
 #endif /* INC_RCC_CLOCK_DEFINES_H_ */
