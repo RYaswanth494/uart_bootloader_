@@ -33,7 +33,7 @@
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
-
+#define DELAY_VALUE_ADDR   ((uint32_t *)0x0801FC00)
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 void delay(volatile uint32_t t) {
@@ -92,9 +92,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
-
-
-
+  uint32_t delay_ms = *DELAY_VALUE_ADDR;
+  if (delay_ms == 0xFFFFFFFF || delay_ms == 0) {
+      delay_ms = 500; // Default
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -102,7 +103,7 @@ int main(void)
   while (1)
   {
       GPIOB->ODR ^= (1 << 2);  // Toggle PB2
-      delay(80000);
+      HAL_Delay(delay_ms);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

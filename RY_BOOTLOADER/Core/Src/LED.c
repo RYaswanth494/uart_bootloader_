@@ -6,7 +6,6 @@
  */
 #include "RCC_CLOCK_DEFINES.h"
 #include"GPIO.h"
-#include"DEFINATIONS.h"
 #include"main.h"
 
 // RCC registers

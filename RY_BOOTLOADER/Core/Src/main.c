@@ -1,10 +1,11 @@
 #include"RCC_CLOCK_DEFINES.h"
 #include"RCC_DECLARATIONS.h"
-#include"DEFINATIONS.h"
+#include"FLASH_DECLARATIONS.h"
 #include"LED.h"
 #include "stm32f1xx.h"  // Or "core_cm3.h" if using raw CMSIS
 #define APP_ADDRESS 0x08004000
 #define SCB_VTOR (*(volatile uint32_t*)0xE000ED08)
+#define DELAY_VALUE_ADDR   0x0801FC00
 void jump_to_application(void) {
     // 1. Read the MSP and Reset Handler from application vector table
     uint32_t app_stack = *(volatile uint32_t*)(APP_ADDRESS);
@@ -23,16 +24,17 @@ void jump_to_application(void) {
 
 int main(){
 	RCC_SYSTEM_CLOCK_HSE();
+	//RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
 	LED_INIT();
-	int i=0;
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-		for( i=0;i<5;i++){
+		for(int i=0;i<8;i++){
 			TOGGLE_LED();
-			for(int j=0;j<1000000;j++);
+			for(int j=0;j<100000;j++);
 		}
-		if(i>4){
-			jump_to_application();
-		}
+		uint32_t delay_ms = 50;
+		RY_FLASH_ErasePage(DELAY_VALUE_ADDR);  // Optional: Only if not already erased
+		RY_FLASH_ProgramBuffer(DELAY_VALUE_ADDR, (uint8_t*)&delay_ms, sizeof(delay_ms));
+		jump_to_application();
 	}
 }
