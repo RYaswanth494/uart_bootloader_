@@ -5,7 +5,7 @@
  *      Author: maday
  */
 #include "RCC_CLOCK_DEFINES.h"
-#include"GPIO.h"
+//#include"GPIO.h"
 #include"main.h"
 
 // RCC registers

@@ -1,2 +1,2 @@
-../Core/Src/LED.c:11:6:LED_INIT	4	static
-../Core/Src/LED.c:16:6:TOGGLE_LED	8	static
+../Core/Src/LED.c:16:6:LED_INIT	4	static
+../Core/Src/LED.c:21:6:TOGGLE_LED	4	static

@@ -8,7 +8,7 @@
 
 #include"RCC_CLOCK_DEFINES.h"
 #include"FLASH_DEFINES.h"
-#include"GPIO.h"
+//#include"GPIO.h"
 #include"main.h"
 //#define RY_FLASH_ACR   (*(volatile uint32_t *)0x40022000)
 

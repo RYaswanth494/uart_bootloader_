@@ -61,21 +61,17 @@ volatile uint16_t rx_head = 0, rx_tail = 0;
 }
  UART_Status_t Init(uint32_t baudrate) {
     RCC_APB2ENR |= RCC_IOPAEN | RCC_RY_USART1EN;
-
     // PA9 = TX: AF Push-Pull
     GPIOA_CRH &= ~(0xF << 4);
     GPIOA_CRH |=  (0xB << 4); // MODE9=11, CNF9=10
-
     // PA10 = RX: Input Floating
     GPIOA_CRH &= ~(0xF << 8);
     GPIOA_CRH |=  (0x4 << 8); // MODE10=00, CNF10=01
-
     RY_USART1->CR1.ALL = 0;
     SetBaudRate(baudrate);
     RY_USART1->CR1.BITS.RE = 1;
     RY_USART1->CR1.BITS.TE = 1;
     RY_USART1->CR1.BITS.UE = 1;
-
     return UART_OK;
 }
 UART_Status_t SendByte(uint8_t byte) {

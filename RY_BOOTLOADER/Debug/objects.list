@@ -1,6 +1,8 @@
+"./Core/Src/FLASH.o"
 "./Core/Src/GPIO.o"
 "./Core/Src/LED.o"
 "./Core/Src/RCC_CLOCK.o"
+"./Core/Src/UART.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f1xx_hal_msp.o"
 "./Core/Src/stm32f1xx_it.o"
