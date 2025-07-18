@@ -13,7 +13,7 @@
  uint8_t RX_BufferEmpty(void);
  void TX_BufferPush(uint8_t data);
  void RX_BufferPush(uint8_t data);
- UART_Status_t Init(uint32_t baudrate);
+ UART_Status_t UART1_INIT(uint32_t baudrate);
  UART_Status_t SetBaudRate(uint32_t baudrate);
  UART_Status_t SendByte(uint8_t byte);
  UART_Status_t SendString(const char *str);

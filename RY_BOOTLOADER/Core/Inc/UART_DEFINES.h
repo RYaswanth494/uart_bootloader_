@@ -21,23 +21,12 @@ typedef enum {
 
 // UART API using function pointers
 typedef struct {
-    UART_Status_t (*Init)(uint32_t baudrate);
+	UART_Status_t (*UART1_INIT)(uint32_t baud_rate);
     UART_Status_t (*SetBaudRate)(uint32_t baudrate);
     UART_Status_t (*SendByte)(uint8_t byte);
     UART_Status_t (*SendString)(const char *str);
-    UART_Status_t (*SendBytes)(const uint8_t *data, uint16_t len);
-    UART_Status_t (*ReceiveByte)(uint8_t *byte);
-    UART_Status_t (*ReceiveByteTimeout)(uint8_t *byte, uint32_t timeout_us);
-    UART_Status_t (*ReceiveByteAsync)(uint8_t *byte);
-    UART_Status_t (*SendByteAsync)(uint8_t byte);
-    UART_Status_t (*SendBytesAsync)(const uint8_t *data, uint16_t len);
-    UART_Status_t (*ProcessTX)(void);  // must be called in main loop
-    void          (*FlushTX)(void);
-    void          (*FlushRX)(void);
-    uint8_t       (*TXBusy)(void);
-    uint8_t       (*RXAvailable)(void);
-    UART_Status_t (*CheckErrors)(void);
-} UART_Interface_t;
+    UART_Status_t  (*ReceiveByte)(uint8_t *byte);
+} UART1_Interface_t;
 
 
 #define UART_TX_BUFFER_SIZE 128
@@ -97,6 +86,6 @@ typedef struct {
 #define RY_USART_GTPR_GT_MASK    (0xFF << 8)  // Guard time value
 
 
- extern UART_Interface_t UART1;
+ extern UART1_Interface_t UART1;
 
 #endif /* INC_UART_DEFINES_H_ */

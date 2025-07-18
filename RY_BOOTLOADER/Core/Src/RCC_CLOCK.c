@@ -6,7 +6,7 @@
  */
 
 
-#include"RCC_CLOCK_DEFINES.h"
+#include"RCC_STRUCTURES.h"
 #include"FLASH_DEFINES.h"
 //#include"GPIO.h"
 #include"main.h"
@@ -24,16 +24,16 @@ extern void TOGGLE_LED();
     // 4. Wait until HSI is confirmed as system clock
 void RCC_SYSTEM_CLOCK_HSI(){
     // 1. Enable HSI
-    RCC_RY->CRbits.HSION = 1;
-    while (!RCC_RY->CRbits.HSIRDY);   // Wait for HSI ready
+	RY_RCC->CR.BITS.HSION= 1;
+    while (!(RY_RCC->CR.BITS.HSIRDY));   // Wait for HSI ready
 
     // 2. Set RY_FLASH latency = 0 wait states (≤24MHz)
    // RY_FLASH-> &= ~0x7;
    // RY_FLASH_ACR |= 0x0;
 
     // 3. Select HSI as system clock
-    RCC_RY->CFGRbits.SW = 0b00;       // SYSCLK = HSI
-    while (RCC_RY->CFGRbits.SWS != 0b00);  // Wait till HSI used
+    RY_RCC->CFGR.BITS.SW = 0b00;       // SYSCLK = HSI
+    while (RY_RCC->CFGR.BITS.SWS != 0b00);  // Wait till HSI used
 }
 /*********************************************************************************
  *                                                                                *
@@ -42,20 +42,20 @@ void RCC_SYSTEM_CLOCK_HSI(){
  * ********************************************************************************/
 void RCC_SYSTEM_CLOCK_HSE(){
     // 1. Enable HSE
-    RCC_RY->CRbits.HSEON = 1;
-    while (!RCC_RY->CRbits.HSERDY);   // Wait for HSE ready
+	RY_RCC->CR.BITS.HSEON = 1;
+    while (!RY_RCC->CR.BITS.HSERDY);   // Wait for HSE ready
 
     // 2. Set RY_FLASH latency = 0 wait states (≤24MHz)
     //RY_FLASH_ACR &= ~0x7;
     //RY_FLASH_ACR |= 0x0;
 
     // 3. Select HSE as system clock
-    RCC_RY->CFGRbits.SW = 0b01;       // SYSCLK = HSE
-    while (RCC_RY->CFGRbits.SWS != 0b01);  // Wait till HSE used
-}
+    RY_RCC->CFGR.BITS.SW = 0b01;       // SYSCLK = HSE
+    while (RY_RCC->CFGR.BITS.SWS != 0b01);  // Wait till HSE used
+}/*
 void RCC_SYSTEM_CLOCK_HSIPLL_64MHZ(){
     // 1. Enable HSI
-    RCC_RY->CRbits.HSION = 1;
+	RY_RCC->CRbits.HSION = 1;
     while (!RCC_RY->CRbits.HSIRDY);
 
     // 2. Set 2 wait states in RY_FLASH for >48 MHz
@@ -63,16 +63,16 @@ void RCC_SYSTEM_CLOCK_HSIPLL_64MHZ(){
   //  RY_FLASH_ACR |= 0x2;     // 2 wait states
 
     // 3. Configure PLL (HSI/2 * 16 = 64 MHz)
-    RCC_RY->CFGRbits.PLLSRC = 0;        // HSI/2
-    RCC_RY->CFGRbits.PLLMULL = 0b0110;  // x16 (0b0110 means x16)
+    RY_RCC->CFGRbits.PLLSRC = 0;        // HSI/2
+    RY_RCC->CFGRbits.PLLMULL = 0b0110;  // x16 (0b0110 means x16)
 
     // 4. Enable PLL
-    RCC_RY->CRbits.PLLON = 1;
-    while (!RCC_RY->CRbits.PLLRDY);
+    RY_RCC->CRbits.PLLON = 1;
+    while (!RY_RCC->CRbits.PLLRDY);
 
     // 5. Select PLL as system clock
-    RCC_RY->CFGRbits.SW = 0b10;
-    while (RCC_RY->CFGRbits.SWS != 0b10);
+    RY_RCC->CFGRbits.SW = 0b10;
+    while (RY_RCC->CFGRbits.SWS != 0b10);
 }
 void RCC_SYSTEM_CLOCK_HSEPLL_72MHZ(){
 //    // 1. Enable HSE
@@ -133,5 +133,5 @@ void RCC_SYSTEM_CLOCK_HSEPLL_72MHZ(){
 //    GPIOA_CRH |= GPIOA_CRH_AF_PP_50MHz;
 //    // Select MCO = SYSCLK
 //    RCC_CFGR &= ~RCC_CFGR_MCO_MASK;
-//    RCC_CFGR |= RCC_CFGR_MCO_SYSCLK;
+//    RCC_CFGR |= RCC_CFGR_MCO_SYSCLK;*/
 //}
