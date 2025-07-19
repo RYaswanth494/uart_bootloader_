@@ -1,5 +1,5 @@
-../Core/Src/UART.c:32:16:SetBaudRate	2
-../Core/Src/UART.c:40:15:UART1_INIT	1
-../Core/Src/UART.c:54:15:SendByte	2
-../Core/Src/UART.c:59:15:SendString	3
-../Core/Src/UART.c:66:16:ReceiveByte	2
+../Core/Src/UART.c:33:16:SetBaudRate	2
+../Core/Src/UART.c:41:15:UART1_INIT	1
+../Core/Src/UART.c:70:15:SendByte	2
+../Core/Src/UART.c:75:15:SendString	3
+../Core/Src/UART.c:82:16:ReceiveByte	2

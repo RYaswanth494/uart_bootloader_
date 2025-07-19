@@ -1,5 +1,5 @@
-../Core/Src/UART.c:32:16:SetBaudRate	24	static
-../Core/Src/UART.c:40:15:UART1_INIT	16	static
-../Core/Src/UART.c:54:15:SendByte	16	static
-../Core/Src/UART.c:59:15:SendString	16	static
-../Core/Src/UART.c:66:16:ReceiveByte	16	static
+../Core/Src/UART.c:33:16:SetBaudRate	24	static
+../Core/Src/UART.c:41:15:UART1_INIT	16	static
+../Core/Src/UART.c:70:15:SendByte	16	static
+../Core/Src/UART.c:75:15:SendString	16	static
+../Core/Src/UART.c:82:16:ReceiveByte	16	static

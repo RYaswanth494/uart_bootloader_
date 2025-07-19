@@ -1,5 +1,6 @@
 #include"RCC_CLOCK_DEFINES.h"
 #include"RCC_DECLARATIONS.h"
+#include"GPIO_STRUCTURES.h"
 #include"FLASH_DECLARATIONS.h"
 #include"LED.h"
 #include"UART_DECLARATIONS.h"
@@ -23,7 +24,7 @@ void jump_to_application(void) {
     app_entry();
 }
 
-#define BAUD_RATE          11520
+#define BAUD_RATE          115200
 #define CMD_HELLO  0x55
 #define CMD_ACK    0xAA
 #define CMD_SIZE   0x10
@@ -39,9 +40,11 @@ int main(){
 	//uart1_init();
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-    SendByte('A');
-    TOGGLE_LED();
- for(int i=0;i<100000;i++);
+        SendByte('A');
+		RY_GPIOB->ODR.BITS.ODR2=1;
+		for(int i=0;i<100000;i++);
+		RY_GPIOB->ODR.BITS.ODR2=0;
+		for(int i=0;i<100000;i++);
 //        uint8_t cmd = uart_recv();
 //
 //        if (cmd == CMD_HELLO) {

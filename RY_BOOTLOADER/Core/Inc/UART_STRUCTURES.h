@@ -126,7 +126,7 @@ typedef struct {
     RY_USART_GTPR_REG GTPR;   // 0x18
 } RY_USART_Register;
 
-#define RY_USART1   ((volatile RY_USART_Register*)0x40013800)
+#define RY_USART1   ((volatile RY_USART_Register*)0x40013800UL)
 
 
 #endif /* INC_UART_STRUCTURES_H_ */

@@ -14,6 +14,7 @@
 // TX/RX buffers
 
 #include<stdint.h>
+#include"GPIO_STRUCTURES.h"
 #include"UART_DEFINES.h"
 #include"UART_STRUCTURES.h"
 #include"RCC_STRUCTURES.h"
@@ -38,16 +39,31 @@
     return UART_OK;
 }
 UART_Status_t UART1_INIT(uint32_t baud_rate){
+
+    // PA9 = TX: AF Push-Pull
+//    GPIOA_CRH &= ~(0xF << 4);
+//    GPIOA_CRH |=  (0xB << 4); // MODE9=11, CNF9=10
+//
+//    // PA10 = RX: Input Floating
+//    GPIOA_CRH &= ~(0xF << 8);
+//    GPIOA_CRH |=  (0x4 << 8); // MODE10=00, CNF10=01
+
+
 	RY_RCC->APB2ENR.BITS.USART1EN=0;
 	RY_RCC->APB2ENR.BITS.USART1EN=1;
 	RY_RCC->APB2ENR.BITS.IOPAEN=0;
 	RY_RCC->APB2ENR.BITS.IOPAEN=1;
+	//GPIOA->CRH.REG&= ~(0xF << 4);
+	RY_GPIOA->CRH.BITS.CNF9=0b10;
+	RY_GPIOA->CRH.BITS.MODE9=0b11;
+	RY_GPIOA->CRH.BITS.CNF10=0b01;
+	RY_GPIOA->CRH.BITS.MODE10=0b00;
 	RY_USART1->CR1.BITS.UE=0;
 	RY_USART1->CR1.BITS.TE=0;
 	RY_USART1->CR1.BITS.TE=1;
 	RY_USART1->CR1.BITS.RE=0;
 	RY_USART1->CR1.BITS.RE=1;
-	 SetBaudRate(baud_rate);
+	SetBaudRate(baud_rate);
 	RY_USART1->CR1.BITS.UE=1;
 	return UART_OK;
 }

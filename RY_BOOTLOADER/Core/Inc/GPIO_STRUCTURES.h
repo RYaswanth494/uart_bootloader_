@@ -15,18 +15,50 @@
 #define GPIO_BASE_C ((volatile uint32_t *)0x40011000 )
 
 
-typedef struct {
-    volatile uint32_t MODE : 2;
-    volatile uint32_t CNF  : 2;
-} GPIO_PinConfigBits;
-
-// CRL and CRH combined as union
 typedef union {
-    volatile uint32_t REG;
+    volatile uint32_t ALL;
     struct {
-        GPIO_PinConfigBits PIN[8];
+        volatile uint32_t MODE0  : 2;
+        volatile uint32_t CNF0  : 2;
+        volatile uint32_t MODE1  : 2;
+        volatile uint32_t CNF1  : 2;
+        volatile uint32_t MODE2 : 2;
+        volatile uint32_t CNF2  : 2;
+        volatile uint32_t MODE3 : 2;
+        volatile uint32_t CNF3  : 2;
+        volatile uint32_t MODE4 : 2;
+        volatile uint32_t CNF4  : 2;
+        volatile uint32_t MODE5 : 2;
+        volatile uint32_t CNF5  : 2;
+        volatile uint32_t MODE6 : 2;
+        volatile uint32_t CNF6  : 2;
+        volatile uint32_t MODE7 : 2;
+        volatile uint32_t CNF7  : 2;
     } BITS;
-} GPIO_CRx;
+} GPIO_CRL;
+
+typedef union {
+    volatile uint32_t ALL;
+    struct {
+        volatile uint32_t MODE8  : 2;
+        volatile uint32_t CNF8   : 2;
+        volatile uint32_t MODE9  : 2;
+        volatile uint32_t CNF9   : 2;
+        volatile uint32_t MODE10 : 2;
+        volatile uint32_t CNF10  : 2;
+        volatile uint32_t MODE11 : 2;
+        volatile uint32_t CNF11  : 2;
+        volatile uint32_t MODE12 : 2;
+        volatile uint32_t CNF12  : 2;
+        volatile uint32_t MODE13 : 2;
+        volatile uint32_t CNF13  : 2;
+        volatile uint32_t MODE14 : 2;
+        volatile uint32_t CNF14  : 2;
+        volatile uint32_t MODE15 : 2;
+        volatile uint32_t CNF15  : 2;
+    } BITS;
+} GPIO_CRH;
+
 typedef union {
     volatile uint32_t ALL;
     struct {
@@ -74,18 +106,18 @@ typedef union {
 } GPIO_ODR_t;
 
 typedef struct {
-    GPIO_CRx CRL;
-    GPIO_CRx CRH;
+    GPIO_CRL CRL;
+    GPIO_CRH CRH;
     GPIO_IDR_t IDR;
     GPIO_ODR_t ODR;
     volatile uint32_t BSRR;
     volatile uint32_t BRR;
     volatile uint32_t LCKR;
-} GPIO_TypeDef;
+} GPIO;
 
-#define GPIOA ((volatile GPIO_TypeDef*)GPIO_BASE_A)
-#define GPIOA ((volatile GPIO_TypeDef*)GPIO_BASE_B)
-#define GPIOA ((volatile GPIO_TypeDef*)GPIO_BASE_C)
+#define RY_GPIOA ((volatile GPIO*)0x40010800)
+#define RY_GPIOB ((volatile GPIO*)0x40010C00)
+#define RY_GPIOC ((volatile GPIO*)0x40011000)
 
 
 #endif /* INC_GPIO_STRUCTURES_H_ */
