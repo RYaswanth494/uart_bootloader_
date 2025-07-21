@@ -9,24 +9,20 @@
 #define INC_UART_DECLARATIONS_H_
 #include<stdint.h>
 #include"UART_DEFINES.h"
- uint8_t TX_BufferEmpty(void);
- uint8_t RX_BufferEmpty(void);
- void TX_BufferPush(uint8_t data);
- void RX_BufferPush(uint8_t data);
+#include<stdio.h>
  UART_Status_t UART1_INIT(uint32_t baudrate);
  UART_Status_t SetBaudRate(uint32_t baudrate);
  UART_Status_t SendByte(uint8_t byte);
  UART_Status_t SendString(const char *str);
- UART_Status_t SendBytes(const uint8_t *data, uint16_t len);
  UART_Status_t ReceiveByte(uint8_t *byte) ;
- UART_Status_t ReceiveByteTimeout(uint8_t *byte, uint32_t timeout_us);
- UART_Status_t ReceiveByteAsync(uint8_t *byte);
- UART_Status_t SendByteAsync(uint8_t byte) ;
- UART_Status_t SendBytesAsync(const uint8_t *data, uint16_t len);
- UART_Status_t ProcessTX(void) ;
- uint8_t uart_recv();
- void FlushTX(void) ;
- void FlushRX(void) ;
- uint8_t TXBusy(void) ;
- UART_Status_t CheckErrors(void) ;
+ //int _write(int file, char *ptr, int len);
+ int fputc(int ch, FILE *f) ;
+
+
+
+ UART_Status_t UART2_INIT(uint32_t baud_rate) ;
+ UART_Status_t SetBaudRate_USART2(uint32_t baudrate) ;
+ UART_Status_t SendByte2(uint8_t byte);
+ UART_Status_t SendString2(const char *str) ;
+ UART_Status_t  ReceiveByte2(uint8_t *byte);
 #endif /* INC_UART_DECLARATIONS_H_ */

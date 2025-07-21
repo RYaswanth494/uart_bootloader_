@@ -1,5 +1,11 @@
-../Core/Src/UART.c:33:16:SetBaudRate	24	static
-../Core/Src/UART.c:41:15:UART1_INIT	16	static
-../Core/Src/UART.c:70:15:SendByte	16	static
-../Core/Src/UART.c:75:15:SendString	16	static
-../Core/Src/UART.c:82:16:ReceiveByte	16	static
+../Core/Src/UART.c:34:16:SetBaudRate	24	static
+../Core/Src/UART.c:42:15:UART1_INIT	16	static
+../Core/Src/UART.c:61:15:SendByte	16	static
+../Core/Src/UART.c:66:15:SendString	16	static
+../Core/Src/UART.c:73:16:ReceiveByte	16	static
+C:\ST\STM32CubeIDE_1.17.0\STM32CubeIDE\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344\tools\bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/include/stdio.h:220:5:fputc	16	static
+../Core/Src/UART.c:95:15:SetBaudRate_USART2	24	static
+../Core/Src/UART.c:103:15:UART2_INIT	16	static
+../Core/Src/UART.c:129:15:SendByte2	16	static
+../Core/Src/UART.c:134:15:SendString2	16	static
+../Core/Src/UART.c:141:16:ReceiveByte2	16	static

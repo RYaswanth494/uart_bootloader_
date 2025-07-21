@@ -127,6 +127,7 @@ typedef struct {
 } RY_USART_Register;
 
 #define RY_USART1   ((volatile RY_USART_Register*)0x40013800UL)
+#define RY_USART2   ((volatile RY_USART_Register*)0x40004400)
 
 
 #endif /* INC_UART_STRUCTURES_H_ */

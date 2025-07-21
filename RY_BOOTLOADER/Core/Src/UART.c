@@ -14,6 +14,7 @@
 // TX/RX buffers
 
 #include<stdint.h>
+#include<stdio.h>
 #include"GPIO_STRUCTURES.h"
 #include"UART_DEFINES.h"
 #include"UART_STRUCTURES.h"
@@ -39,16 +40,6 @@
     return UART_OK;
 }
 UART_Status_t UART1_INIT(uint32_t baud_rate){
-
-    // PA9 = TX: AF Push-Pull
-//    GPIOA_CRH &= ~(0xF << 4);
-//    GPIOA_CRH |=  (0xB << 4); // MODE9=11, CNF9=10
-//
-//    // PA10 = RX: Input Floating
-//    GPIOA_CRH &= ~(0xF << 8);
-//    GPIOA_CRH |=  (0x4 << 8); // MODE10=00, CNF10=01
-
-
 	RY_RCC->APB2ENR.BITS.USART1EN=0;
 	RY_RCC->APB2ENR.BITS.USART1EN=1;
 	RY_RCC->APB2ENR.BITS.IOPAEN=0;
@@ -82,6 +73,74 @@ UART_Status_t SendString(const char *str) {
 UART_Status_t  ReceiveByte(uint8_t *byte){
     while (!RY_USART1->SR.BITS.RXNE);
     *byte = RY_USART1->DR.BITS.DR & 0xFF;
+    return UART_OK;
+}
+// ===== Redirect printf() via fputc() =====
+int fputc(int ch, FILE *f) {
+    while (!RY_USART1->SR.BITS.TXE);  // Wait until transmit buffer empty
+    RY_USART1->DR.BITS.DR = (ch & 0xFF);              // Send character
+    return ch;
+}
+// ===== Redirect printf() to UART1 =====
+//int _write(int file, char *ptr, int len) {
+//    for (int i = 0; i < len; i++) {
+//        while (!RY_USART1->SR.BITS.TXE);  // Wait until transmit buffer empty
+//        RY_USART1->DR.BITS.DR= ptr[i];                   // Send character
+//    }
+//    return len;
+//}
+
+
+
+UART_Status_t SetBaudRate_USART2(uint32_t baudrate) {
+   if (baudrate == 0) return UART_ERROR;
+   uint32_t pclk = 8000000;
+   uint32_t RY_USARTdiv = (pclk + (baudrate / 2)) / baudrate;
+   RY_USART2->BRR.BITS.DIV_Mantissa = (RY_USARTdiv >> 4) & 0xFFF;
+   RY_USART2->BRR.BITS.DIV_Fraction = RY_USARTdiv & 0xF;
+   return UART_OK;
+}
+UART_Status_t UART2_INIT(uint32_t baud_rate) {
+    // Enable USART2 and GPIOA clocks
+    RY_RCC->APB1ENR.BITS.USART2EN = 0;
+    RY_RCC->APB1ENR.BITS.USART2EN = 1;
+    RY_RCC->APB2ENR.BITS.IOPAEN = 0;
+    RY_RCC->APB2ENR.BITS.IOPAEN = 1;
+    // Configure PA2 (TX) as Alternate function push-pull, 50MHz
+    RY_GPIOA->CRL.BITS.CNF2 = 0b10;  // AF Push-Pull
+    RY_GPIOA->CRL.BITS.MODE2 = 0b11; // Output mode, max speed 50 MHz
+    // Configure PA3 (RX) as Input floating
+    RY_GPIOA->CRL.BITS.CNF3 = 0b01;  // Floating input
+    RY_GPIOA->CRL.BITS.MODE3 = 0b00; // Input mode
+    // Disable USART2 before configuration
+    RY_USART2->CR1.BITS.UE = 0;
+    // Enable Transmitter and Receiver
+    RY_USART2->CR1.BITS.TE = 0;
+    RY_USART2->CR1.BITS.TE = 1;
+    RY_USART2->CR1.BITS.RE = 0;
+    RY_USART2->CR1.BITS.RE = 1;
+    // Set baud rate
+    SetBaudRate_USART2(baud_rate); // <- You must write this for USART2
+    // Enable USART2
+    RY_USART2->CR1.BITS.UE = 1;
+
+    return UART_OK;
+}
+UART_Status_t SendByte2(uint8_t byte){
+    while (!RY_USART2->SR.BITS.TXE);
+    RY_USART2->DR.BITS.DR = byte;
+    return UART_OK;
+}
+UART_Status_t SendString2(const char *str) {
+   while (*str) {
+       if (SendByte2((uint8_t)(*str++)) != UART_OK)
+           return UART_ERROR;
+   }
+   return UART_OK;
+}
+UART_Status_t  ReceiveByte2(uint8_t *byte){
+    while (!RY_USART2->SR.BITS.RXNE);
+    *byte = RY_USART2->DR.BITS.DR & 0xFF;
     return UART_OK;
 }
 /* Interface table */

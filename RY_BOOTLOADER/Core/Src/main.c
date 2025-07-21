@@ -37,10 +37,12 @@ int main(){
 	//RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
+	UART2_INIT(BAUD_RATE);
+	printf("UART1 BOOTLOADER");
 	//uart1_init();
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-        SendByte('A');
+        SendString("kfngkfjgjj");
 		RY_GPIOB->ODR.BITS.ODR2=1;
 		for(int i=0;i<100000;i++);
 		RY_GPIOB->ODR.BITS.ODR2=0;
