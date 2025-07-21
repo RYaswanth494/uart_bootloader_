@@ -38,53 +38,36 @@ int main(){
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
 	UART2_INIT(BAUD_RATE);
-	printf("UART1 BOOTLOADER");
-	//uart1_init();
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-        SendString("kfngkfjgjj");
-		RY_GPIOB->ODR.BITS.ODR2=1;
-		for(int i=0;i<100000;i++);
-		RY_GPIOB->ODR.BITS.ODR2=0;
-		for(int i=0;i<100000;i++);
-//        uint8_t cmd = uart_recv();
-//
-//        if (cmd == CMD_HELLO) {
-//        	SendByte(CMD_ACK);
-//        }
-//
-//        else if (cmd == CMD_SIZE) {
-//            firmware_size = uart_recv();          // MSB
-//            firmware_size <<= 8; firmware_size |= uart_recv();
-//            firmware_size <<= 8; firmware_size |= uart_recv();
-//            firmware_size <<= 8; firmware_size |= uart_recv();
-//            SendByte(CMD_ACK);
-//        }
-//
-//        else if (cmd == CMD_BEGIN) {
-//        	RY_FLASH_EraseAppRegion();
-//            SendByte(CMD_ACK);
-//        }
-//
-//        else if (cmd == CMD_DATA) {
-//            uint16_t addr = uart_recv() << 8;
-//            addr |= uart_recv();
-//            uint8_t len = uart_recv();
-//
-//            uint8_t buffer[256];
-//            for (uint8_t i = 0; i < len; i++) {
-//                buffer[i] = uart_recv();
-//            }
-//
-//            RY_FLASH_ProgramBuffer(APP_ADDRESS + addr, buffer, len);
-//            SendByte(CMD_ACK);
-//        }
-//
-//        else if (cmd == CMD_END) {
-//        	SendByte(CMD_ACK);
-//            HAL_Delay(1000);
-//            jump_to_application();  // jump to app at 0x08004000
-//        }
+        uint8_t cmd = uart_recv();
+        if (cmd == CMD_HELLO) {
+        	SendByte(CMD_ACK);
+        }
+        else if (cmd == CMD_BEGIN) {
+        	RY_FLASH_EraseAppRegion();
+            SendByte(CMD_ACK);
+        }
+
+        else if (cmd == CMD_DATA) {
+            uint32_t addr=0;
+            addr |= ((uint32_t)uart_recv() << 24);
+            addr |= ((uint32_t)uart_recv() << 16);
+            addr |= ((uint32_t)uart_recv() << 8);
+            addr |= ((uint32_t)uart_recv());
+            uint8_t len = uart_recv();
+            uint8_t buffer[256];
+            for (uint8_t i = 0; i < len; i++) {
+                buffer[i] = uart_recv();
+            }
+			RY_FLASH_ProgramBuffer( addr, buffer, len);
+            SendByte(CMD_ACK);
+        }
+
+        else if (cmd == CMD_END) {
+        	SendByte(CMD_ACK);
+            jump_to_application();  // jump to app at 0x08004000
+        }
 		//uart_tx('j');
 //		for(int i=0;i<8;i++){
 //			TOGGLE_LED();

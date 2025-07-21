@@ -75,20 +75,11 @@ UART_Status_t  ReceiveByte(uint8_t *byte){
     *byte = RY_USART1->DR.BITS.DR & 0xFF;
     return UART_OK;
 }
-// ===== Redirect printf() via fputc() =====
-int fputc(int ch, FILE *f) {
-    while (!RY_USART1->SR.BITS.TXE);  // Wait until transmit buffer empty
-    RY_USART1->DR.BITS.DR = (ch & 0xFF);              // Send character
-    return ch;
+uint8_t uart_recv(){
+    while (!RY_USART1->SR.BITS.RXNE);
+    uint8_t byte = RY_USART1->DR.BITS.DR & 0xFF;
+    return byte;
 }
-// ===== Redirect printf() to UART1 =====
-//int _write(int file, char *ptr, int len) {
-//    for (int i = 0; i < len; i++) {
-//        while (!RY_USART1->SR.BITS.TXE);  // Wait until transmit buffer empty
-//        RY_USART1->DR.BITS.DR= ptr[i];                   // Send character
-//    }
-//    return len;
-//}
 
 
 

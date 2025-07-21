@@ -15,8 +15,7 @@
  UART_Status_t SendByte(uint8_t byte);
  UART_Status_t SendString(const char *str);
  UART_Status_t ReceiveByte(uint8_t *byte) ;
- //int _write(int file, char *ptr, int len);
- int fputc(int ch, FILE *f) ;
+uint8_t uart_recv();
 
 
 
