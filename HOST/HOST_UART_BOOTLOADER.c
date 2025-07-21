@@ -4,13 +4,13 @@
 #include <string.h>
 #include <windows.h>
 
-#define CMD_HELLO       0x01
-#define CMD_BEGIN       0x02
-#define CMD_DATA        0x03
-#define CMD_END         0x04
-#define CMD_FINAL_CHKSUM 0x05
-#define CMD_ACK   0x79
+#define CMD_HELLO   0x55
+#define CMD_BEGIN   0x01
+#define CMD_DATA    0x02
+#define CMD_END     0x03
+#define CMD_ACK     0xAA
 
+// Open COM port
 HANDLE open_serial(const char *port) {
     HANDLE h = CreateFileA(port, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
     if (h == INVALID_HANDLE_VALUE) {
@@ -23,16 +23,18 @@ HANDLE open_serial(const char *port) {
     dcb.BaudRate = CBR_115200;
     dcb.ByteSize = 8;
     dcb.StopBits = ONESTOPBIT;
-    dcb.Parity   = NOPARITY;
+    dcb.Parity = NOPARITY;
     SetCommState(h, &dcb);
     return h;
 }
 
+// Send 1 byte
 void send_byte(HANDLE h, uint8_t b) {
     DWORD written;
     WriteFile(h, &b, 1, &written, NULL);
 }
 
+// Receive 1 byte
 uint8_t recv_byte(HANDLE h) {
     uint8_t b;
     DWORD read;
@@ -40,6 +42,23 @@ uint8_t recv_byte(HANDLE h) {
     return b;
 }
 
+// Wait for ACK with timeout
+int wait_for_ack(HANDLE h, uint8_t expected, int timeout_ms) {
+    uint8_t b;
+    DWORD read;
+    DWORD start = GetTickCount();
+    while (GetTickCount() - start < (DWORD)timeout_ms) {
+        if (ReadFile(h, &b, 1, &read, NULL) && read == 1) {
+            return (b == expected);
+        }
+        Sleep(10);
+    }
+
+    printf("Timeout waiting for ACK (0x%02X)\n", expected);
+    return 0;
+}
+
+// Convert 2 hex characters to byte
 uint8_t hex2byte(const char *hex) {
     uint8_t val;
     sscanf(hex, "%2hhx", &val);
@@ -60,23 +79,23 @@ int main(int argc, char **argv) {
 
     HANDLE hSerial = open_serial(argv[2]);
 
-    // Handshake
+    // Step 1: Send CMD_HELLO
     send_byte(hSerial, CMD_HELLO);
-    if (recv_byte(hSerial) != CMD_ACK) {
+    if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
         printf("No ACK for HELLO\n");
         return 1;
     }
+    printf(" ACK for HELLO\n");
 
-    // Erase app region
+    // Step 2: Send CMD_BEGIN
     send_byte(hSerial, CMD_BEGIN);
-    if (recv_byte(hSerial) != CMD_ACK) {
+    if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
         printf("No ACK for BEGIN\n");
         return 1;
     }
 
-    char line[600];
+       char line[600];
     uint32_t ext_addr = 0;
-    uint32_t full_checksum = 0;
 
     while (fgets(line, sizeof(line), f)) {
         if (line[0] != ':') continue;
@@ -85,9 +104,12 @@ int main(int argc, char **argv) {
         uint16_t offset = (hex2byte(&line[3]) << 8) | hex2byte(&line[5]);
         uint8_t type = hex2byte(&line[7]);
 
-        if (type == 0x00) {  // Data
+        if (type == 0x00) {  // Data record
             uint32_t addr = ext_addr + offset;
+            printf("Sending Addr: 0x%06X, Len: %d, Data: ", addr, len);
+
             send_byte(hSerial, CMD_DATA);
+            send_byte(hSerial, (addr>>24)& 0xFF);
             send_byte(hSerial, (addr >> 16) & 0xFF);
             send_byte(hSerial, (addr >> 8) & 0xFF);
             send_byte(hSerial, addr & 0xFF);
@@ -96,45 +118,35 @@ int main(int argc, char **argv) {
             for (int i = 0; i < len; i++) {
                 uint8_t data = hex2byte(&line[9 + i * 2]);
                 send_byte(hSerial, data);
-                full_checksum += data;  // accumulate final checksum
+                printf("%02X ", data);
             }
+            printf("\n");
 
-            uint8_t line_checksum = hex2byte(&line[9 + len * 2]);
-            send_byte(hSerial, line_checksum);  // ✅ Send line checksum
-
-            if (recv_byte(hSerial) != CMD_ACK) {
+            if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
                 printf("No ACK for DATA at addr 0x%06X\n", addr);
                 return 1;
             }
         }
-        else if (type == 0x04) {  // Extended linear address
-            ext_addr = ((uint32_t)hex2byte(&line[9]) << 8 | hex2byte(&line[11])) << 16;
-        }
         else if (type == 0x01) {  // End of file
             break;
+        }
+        else if (type == 0x04) {  // Extended linear address
+            ext_addr = ((uint32_t)hex2byte(&line[9]) << 8 | hex2byte(&line[11])) << 16;
+            printf("Set Extended Address to 0x%08X\n", ext_addr);
+        }
+        else {
+            printf("Skipping unsupported record type: 0x%02X\n", type);
         }
     }
 
     fclose(f);
-
-    // END command
+    // Step 4: Send CMD_END
     send_byte(hSerial, CMD_END);
-    if (recv_byte(hSerial) != CMD_ACK) {
+    if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
         printf("No ACK for END\n");
         return 1;
     }
 
-    // ✅ Send final checksum
-    send_byte(hSerial, CMD_FINAL_CHKSUM);
-    send_byte(hSerial, (full_checksum >> 24) & 0xFF);
-    send_byte(hSerial, (full_checksum >> 16) & 0xFF);
-    send_byte(hSerial, (full_checksum >> 8) & 0xFF);
-    send_byte(hSerial, full_checksum & 0xFF);
-    if (recv_byte(hSerial) != CMD_ACK) {
-        printf("No ACK for FINAL_CHKSUM\n");
-        return 1;
-    }
-
-    printf("Upload complete. Final checksum: 0x%08X\n", full_checksum);
+    printf("Upload complete.\n");
     return 0;
 }
