@@ -1,2 +1,2 @@
-../Core/Src/main.c:11:6:jump_to_application	1
-../Core/Src/main.c:35:5:main	6
+../Core/Src/main.c:12:6:jump_to_application	1
+../Core/Src/main.c:37:5:main	8

@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (12.3.rel1)
+# Toolchain: GNU Tools for STM32 (13.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -63,8 +63,8 @@ all: main-build
 main-build: APPLICATION.elf secondary-outputs
 
 # Tool invocations
-APPLICATION.elf APPLICATION.map: $(OBJS) $(USER_OBJS) C:\Users\maday\STM32CubeIDE\workspace_1.17.0\I2C_SLAVE_HAL\STM32F103CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "APPLICATION.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\maday\STM32CubeIDE\workspace_1.17.0\I2C_SLAVE_HAL\STM32F103CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="APPLICATION.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+APPLICATION.elf APPLICATION.map: $(OBJS) $(USER_OBJS) C:\Users\MadaYaswanth\STM32CubeIDE\uart_bootloader_\APPLICATION\STM32F103CBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "APPLICATION.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\MadaYaswanth\STM32CubeIDE\uart_bootloader_\APPLICATION\STM32F103CBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="APPLICATION.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -4,6 +4,7 @@
 #include"FLASH_DECLARATIONS.h"
 #include"LED.h"
 #include"UART_DECLARATIONS.h"
+#include"UART_STRUCTURES.h"
 #include "stm32f1xx.h"  // Or "core_cm3.h" if using raw CMSIS
 #define APP_ADDRESS 0x08004000
 #define SCB_VTOR (*(volatile uint32_t*)0xE000ED08)
@@ -27,6 +28,7 @@ void jump_to_application(void) {
 #define BAUD_RATE          115200
 #define CMD_HELLO  0x55
 #define CMD_ACK    0xAA
+#define CMD_NACK 0xff
 #define CMD_SIZE   0x10
 #define CMD_BEGIN  0x01
 #define CMD_DATA   0x02
@@ -34,40 +36,50 @@ void jump_to_application(void) {
 volatile uint32_t firmware_size = 0;
 int main(){
 	RCC_SYSTEM_CLOCK_HSE();
+	HAL_Init();
+	uint32_t start=HAL_GetTick();
 	//RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
 	UART2_INIT(BAUD_RATE);
+	//SendString2("Started............");
+	//SendString2("waiting............");
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-        uint8_t cmd = uart_recv();
-        if (cmd == CMD_HELLO) {
-        	SendByte(CMD_ACK);
-        }
-        else if (cmd == CMD_BEGIN) {
-        	RY_FLASH_EraseAppRegion();
-            SendByte(CMD_ACK);
-        }
+		while(!((HAL_GetTick()-start)>5000)){
+            if((RY_USART1->SR.BITS.RXNE)){
+       		 uint8_t cmd = uart_recv();
+                  if(cmd == CMD_HELLO) {
+               	SendByte(CMD_ACK);
+               }
+               else if (cmd == CMD_BEGIN) {
+               	RY_FLASH_EraseAppRegion();
+                   SendByte(CMD_ACK);
+               }
+               else if (cmd == CMD_DATA) {
+                   uint32_t addr=0;
+                   addr |= ((uint32_t)uart_recv() << 24);
+                   addr |= ((uint32_t)uart_recv() << 16);
+                   addr |= ((uint32_t)uart_recv() << 8);
+                   addr |= ((uint32_t)uart_recv());
+                   uint8_t len = uart_recv();
+                   uint8_t buffer[256];
+                   for (uint8_t i = 0; i < len; i++) {
+                       buffer[i] = uart_recv();
+                   }
 
-        else if (cmd == CMD_DATA) {
-            uint32_t addr=0;
-            addr |= ((uint32_t)uart_recv() << 24);
-            addr |= ((uint32_t)uart_recv() << 16);
-            addr |= ((uint32_t)uart_recv() << 8);
-            addr |= ((uint32_t)uart_recv());
-            uint8_t len = uart_recv();
-            uint8_t buffer[256];
-            for (uint8_t i = 0; i < len; i++) {
-                buffer[i] = uart_recv();
+       			RY_FLASH_ProgramBuffer( addr, buffer, len);
+                SendByte(CMD_ACK);
+
+               }
+
+               else if (cmd == CMD_END) {
+               	SendByte(CMD_ACK);
+                jump_to_application();  // jump to app at 0x08004000
+               }
             }
-			RY_FLASH_ProgramBuffer( addr, buffer, len);
-            SendByte(CMD_ACK);
-        }
-
-        else if (cmd == CMD_END) {
-        	SendByte(CMD_ACK);
-            jump_to_application();  // jump to app at 0x08004000
-        }
+		}
+        jump_to_application();
 		//uart_tx('j');
 //		for(int i=0;i<8;i++){
 //			TOGGLE_LED();

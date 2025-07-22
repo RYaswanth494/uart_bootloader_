@@ -9,3 +9,4 @@
 ../Core/Src/UART.c:120:15:SendByte2	2
 ../Core/Src/UART.c:125:15:SendString2	3
 ../Core/Src/UART.c:132:16:ReceiveByte2	2
+../Core/Src/UART.c:137:6:SendInteger	1

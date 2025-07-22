@@ -134,6 +134,12 @@ UART_Status_t  ReceiveByte2(uint8_t *byte){
     *byte = RY_USART2->DR.BITS.DR & 0xFF;
     return UART_OK;
 }
+void SendInteger(uint32_t num){
+	SendByte2((num>>24)& 0xFF);
+	SendByte2((num>>16)& 0xFF);
+	SendByte2((num>>8)& 0xFF);
+	SendByte2((num>>0)& 0xFF);
+}
 /* Interface table */
 UART1_Interface_t UART1 = {
     .UART1_INIT = UART1_INIT,

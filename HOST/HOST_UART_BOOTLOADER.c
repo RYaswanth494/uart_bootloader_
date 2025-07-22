@@ -9,7 +9,7 @@
 #define CMD_DATA    0x02
 #define CMD_END     0x03
 #define CMD_ACK     0xAA
-
+#define CMD_NACK 0xff
 // Open COM port
 HANDLE open_serial(const char *port) {
     HANDLE h = CreateFileA(port, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
@@ -64,7 +64,14 @@ uint8_t hex2byte(const char *hex) {
     sscanf(hex, "%2hhx", &val);
     return val;
 }
-
+// Calculate checksum for a data record line
+uint8_t calc_checksum(const char *line, uint8_t byte_count) {
+    uint32_t sum = 0;
+    for (int i = 1; i < 9 + byte_count * 2; i += 2) {
+        sum += hex2byte(&line[i]);
+    }
+    return (uint8_t)((~sum + 1) & 0xFF);
+}
 int main(int argc, char **argv) {
     if (argc < 3) {
         printf("Usage: %s <hexfile> <COMx>\n", argv[0]);
@@ -106,7 +113,7 @@ int main(int argc, char **argv) {
 
         if (type == 0x00) {  // Data record
             uint32_t addr = ext_addr + offset;
-            printf("Sending Addr: 0x%06X, Len: %d, Data: ", addr, len);
+            printf("Sending Addr: 0x%06X, Len: %d, offset :0x%02x Data: ", addr, len,offset);
 
             send_byte(hSerial, CMD_DATA);
             send_byte(hSerial, (addr>>24)& 0xFF);
@@ -120,8 +127,11 @@ int main(int argc, char **argv) {
                 send_byte(hSerial, data);
                 printf("%02X ", data);
             }
+          //  uint8_t file_checksum = hex2byte(&line[9 + len * 2]);
+          //  uint8_t calculated = calc_checksum(line, len);
+          //  printf("| File Checksum: %02X | Calculated: %02X", file_checksum, calculated);
             printf("\n");
-
+             //send_byte(hSerial, calculated);
             if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
                 printf("No ACK for DATA at addr 0x%06X\n", addr);
                 return 1;
