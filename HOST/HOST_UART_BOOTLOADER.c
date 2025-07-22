@@ -77,14 +77,16 @@ int main(int argc, char **argv) {
         printf("Usage: %s <hexfile> <COMx>\n", argv[0]);
         return 1;
     }
-
+printf("commands ok\n");
     FILE *f = fopen(argv[1], "r");
     if (!f) {
         perror("Hex file open failed");
         return 1;
     }
+    printf("file ok\n");
 
     HANDLE hSerial = open_serial(argv[2]);
+    printf("port ok\n");
 
     // Step 1: Send CMD_HELLO
     send_byte(hSerial, CMD_HELLO);
@@ -127,11 +129,11 @@ int main(int argc, char **argv) {
                 send_byte(hSerial, data);
                 printf("%02X ", data);
             }
-          //  uint8_t file_checksum = hex2byte(&line[9 + len * 2]);
-          //  uint8_t calculated = calc_checksum(line, len);
-          //  printf("| File Checksum: %02X | Calculated: %02X", file_checksum, calculated);
-            printf("\n");
-             //send_byte(hSerial, calculated);
+            uint8_t file_checksum = hex2byte(&line[9 + len * 2]);
+           uint8_t calculated = calc_checksum(line, len);
+            printf("| File Checksum: %02X | Calculated: %02X", file_checksum, calculated);
+             send_byte(hSerial, file_checksum);
+             printf("\n");
             if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
                 printf("No ACK for DATA at addr 0x%06X\n", addr);
                 return 1;

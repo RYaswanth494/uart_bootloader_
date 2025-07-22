@@ -46,7 +46,7 @@ int main(){
 	//SendString2("waiting............");
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-		while(!((HAL_GetTick()-start)>5000)){
+		while(!((HAL_GetTick()-start)>10000)){
             if((RY_USART1->SR.BITS.RXNE)){
        		 uint8_t cmd = uart_recv();
                   if(cmd == CMD_HELLO) {
@@ -63,14 +63,21 @@ int main(){
                    addr |= ((uint32_t)uart_recv() << 8);
                    addr |= ((uint32_t)uart_recv());
                    uint8_t len = uart_recv();
+                   uint8_t check_sum=0;
+                   check_sum=(addr&0xff)+((addr>>8)&0xff)+len;
                    uint8_t buffer[256];
                    for (uint8_t i = 0; i < len; i++) {
                        buffer[i] = uart_recv();
+                       check_sum+=buffer[i];
                    }
-
-       			RY_FLASH_ProgramBuffer( addr, buffer, len);
-                SendByte(CMD_ACK);
-
+                   check_sum=(~check_sum)+1;
+                   SendByte2(check_sum);
+                   if(uart_recv()==check_sum){
+              			RY_FLASH_ProgramBuffer( addr, buffer, len);
+                       SendByte(CMD_ACK);
+                   }else{
+                       SendByte(CMD_NACK);
+                   }
                }
 
                else if (cmd == CMD_END) {
