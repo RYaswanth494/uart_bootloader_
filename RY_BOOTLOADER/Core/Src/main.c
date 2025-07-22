@@ -45,6 +45,7 @@ int main(){
 	//SendString2("Started............");
 	//SendString2("waiting............");
   //  SYSTEM_CLOCK_TEST();
+	uint32_t complete_check_sum=0;
 	while(1){
 		while(!((HAL_GetTick()-start)>10000)){
             if((RY_USART1->SR.BITS.RXNE)){
@@ -78,11 +79,20 @@ int main(){
                    }else{
                        SendByte(CMD_NACK);
                    }
+                   complete_check_sum+=check_sum;
                }
-
                else if (cmd == CMD_END) {
-               	SendByte(CMD_ACK);
-                jump_to_application();  // jump to app at 0x08004000
+            	   if(complete_check_sum==(((((uart_recv()<<24))|(uart_recv()<<16))|(uart_recv()<<8))|(uart_recv()<<0))){
+                      	SendByte(CMD_ACK);
+                        SendByte2((complete_check_sum>>24)&0xff);
+                        SendByte2((complete_check_sum>>16) & 0xff);
+                        SendByte2((complete_check_sum>>8) & 0xff);
+                        SendByte2(complete_check_sum & 0xff);
+                       jump_to_application();  // jump to app at 0x08004000
+            	   }else{
+                     	SendByte(CMD_NACK);
+            	   }
+
                }
             }
 		}

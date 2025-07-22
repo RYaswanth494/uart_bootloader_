@@ -104,7 +104,7 @@ printf("commands ok\n");
     }
 
        char line[600];
-    uint32_t ext_addr = 0;
+    uint32_t ext_addr = 0,complete_check_sum=0;
 
     while (fgets(line, sizeof(line), f)) {
         if (line[0] != ':') continue;
@@ -130,6 +130,7 @@ printf("commands ok\n");
                 printf("%02X ", data);
             }
             uint8_t file_checksum = hex2byte(&line[9 + len * 2]);
+            complete_check_sum+=file_checksum;
            uint8_t calculated = calc_checksum(line, len);
             printf("| File Checksum: %02X | Calculated: %02X", file_checksum, calculated);
              send_byte(hSerial, file_checksum);
@@ -150,10 +151,14 @@ printf("commands ok\n");
             printf("Skipping unsupported record type: 0x%02X\n", type);
         }
     }
-
     fclose(f);
     // Step 4: Send CMD_END
+    printf("%d ",complete_check_sum);
     send_byte(hSerial, CMD_END);
+    send_byte(hSerial, (complete_check_sum>>24)&0XFF);
+    send_byte(hSerial, (complete_check_sum>>16)&0xff);
+    send_byte(hSerial, (complete_check_sum>>8)&0xff);
+    send_byte(hSerial, (complete_check_sum)&0xff);
     if (!wait_for_ack(hSerial, CMD_ACK, 1000)) {
         printf("No ACK for END\n");
         return 1;
