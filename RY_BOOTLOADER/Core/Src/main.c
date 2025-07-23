@@ -5,6 +5,7 @@
 #include"LED.h"
 #include"UART_DECLARATIONS.h"
 #include"UART_STRUCTURES.h"
+#include"HEX_STRUCTURES.h"
 #include "stm32f1xx.h"  // Or "core_cm3.h" if using raw CMSIS
 #define APP_ADDRESS 0x08004000
 #define SCB_VTOR (*(volatile uint32_t*)0xE000ED08)
@@ -24,6 +25,8 @@ void jump_to_application(void) {
     void (*app_entry)(void) = (void*)app_reset;
     app_entry();
 }
+
+HEX_STRUCTURE hex_records[MAX_RECORDS];
 
 #define BAUD_RATE          115200
 #define CMD_HELLO  0x55
@@ -54,45 +57,53 @@ int main(){
                	SendByte(CMD_ACK);
                }
                else if (cmd == CMD_BEGIN) {
-               	RY_FLASH_EraseAppRegion();
+               //	RY_FLASH_EraseAppRegion();
+            	   record_index=0;
+            	   complete_check_sum=0;
                    SendByte(CMD_ACK);
                }
                else if (cmd == CMD_DATA) {
-                   uint32_t addr=0;
-                   addr |= ((uint32_t)uart_recv() << 24);
-                   addr |= ((uint32_t)uart_recv() << 16);
-                   addr |= ((uint32_t)uart_recv() << 8);
-                   addr |= ((uint32_t)uart_recv());
-                   uint8_t len = uart_recv();
-                   uint8_t check_sum=0;
-                   check_sum=(addr&0xff)+((addr>>8)&0xff)+len;
-                   uint8_t buffer[256];
-                   for (uint8_t i = 0; i < len; i++) {
-                       buffer[i] = uart_recv();
-                       check_sum+=buffer[i];
-                   }
-                   check_sum=(~check_sum)+1;
-                   SendByte2(check_sum);
-                   if(uart_recv()==check_sum){
-              			RY_FLASH_ProgramBuffer( addr, buffer, len);
-                       SendByte(CMD_ACK);
-                   }else{
-                       SendByte(CMD_NACK);
-                   }
-                   complete_check_sum+=check_sum;
+            	  if(record_index>=MAX_RECORDS){
+                      SendByte(CMD_NACK);
+                      continue;
+            	  }
+            	  HEX_STRUCTURE *rec = &hex_records[record_index];
+            	  rec->address |=((((uint32_t)uart_recv()<<8))|((uint32_t)uart_recv()<<0));
+            	  rec->Byte_count= uart_recv();
+            	  uint8_t checksum = rec->Byte_count +
+            	                                 ((rec->address >> 8) & 0xFF) +
+            	                                 (rec->address & 0xFF);
+                  for (uint8_t i = 0; i < rec->Byte_count; i++) {
+					  rec->data[i] = uart_recv();
+					  checksum += rec->data[i];
+				  }
+            	  checksum = (~checksum) + 1;
+            	 rec->check_sum = uart_recv();
+            	 SendByte2(checksum);
+				  if (checksum == rec->check_sum) {
+					  complete_check_sum += checksum;
+					  record_index++;
+					  TOGGLE_LED();
+					  SendByte(CMD_ACK);
+				  } else {
+					  SendByte(CMD_NACK);
+					  jump_to_application();
+				  }
                }
                else if (cmd == CMD_END) {
             	   if(complete_check_sum==(((((uart_recv()<<24))|(uart_recv()<<16))|(uart_recv()<<8))|(uart_recv()<<0))){
                       	SendByte(CMD_ACK);
-                        SendByte2((complete_check_sum>>24)&0xff);
-                        SendByte2((complete_check_sum>>16) & 0xff);
-                        SendByte2((complete_check_sum>>8) & 0xff);
-                        SendByte2(complete_check_sum & 0xff);
+                      	RY_FLASH_EraseAppRegion();
+                        for (uint16_t i = 0; i < record_index; i++) {
+                            HEX_STRUCTURE *rec = &hex_records[i];
+                            uint32_t absolute_address = 0x08000000 + rec->address;
+                            RY_FLASH_ProgramBuffer(absolute_address, rec->data, rec->Byte_count);
+                        }
                        jump_to_application();  // jump to app at 0x08004000
             	   }else{
                      	SendByte(CMD_NACK);
+                     	jump_to_application();
             	   }
-
                }
             }
 		}
