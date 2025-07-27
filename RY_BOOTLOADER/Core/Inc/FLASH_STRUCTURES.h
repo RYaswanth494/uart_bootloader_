@@ -13,8 +13,6 @@
 //----------------------------------
 // FLASH Base Address
 //----------------------------------
-#define RY_FLASH_BASE  0x40022000UL
-
 //----------------------------------
 // FLASH Access Control Register
 //----------------------------------
@@ -72,29 +70,27 @@ typedef union {
 // FLASH Full Register Map
 //----------------------------------
 typedef struct {
-    FLASH_ACR_t   RY_ACR;         // 0x00: Access Control
+	RY_FLASH_ACR_t   RY_ACR;         // 0x00: Access Control
     volatile uint32_t RY_KEYR;    // 0x04: FPEC Key Register
     volatile uint32_t RY_OPTKEYR; // 0x08: Option Byte Key Register
-    FLASH_SR_t    RY_SR;          // 0x0C: Status Register
-    FLASH_CR_t    RY_CR;          // 0x10: Control Register
+    RY_FLASH_SR_t    RY_SR;          // 0x0C: Status Register
+    RY_FLASH_CR_t    RY_CR;          // 0x10: Control Register
     volatile uint32_t RY_AR;      // 0x14: Flash Address Register
     uint32_t RY_RESERVED;         // 0x18: Reserved
     volatile uint32_t RY_OBR;     // 0x1C: Option Byte Register
     volatile uint32_t RY_WRPR;    // 0x20: Write Protection Register
 } RY_FLASH_TypeDef;
-
 //----------------------------------
 // Macro to Access Flash
 //----------------------------------
-#define RY_FLASH   ((RY_FLASH_TypeDef *)RY_FLASH_BASE)
+#define RY_FLASH   ((RY_FLASH_TypeDef *)0x40022000UL)
 
 //----------------------------------
 // Flash Key Values
 //----------------------------------
 #define RY_FLASH_KEY1  0x45670123UL
 #define RY_FLASH_KEY2  0xCDEF89ABUL
-#define RY_FLASH_OPTKEY1  0x08192A3BUL
-#define RY_FLASH_OPTKEY2  0x4C5D6E7FUL
+
 
 #endif // FLASH_REGS_H
 

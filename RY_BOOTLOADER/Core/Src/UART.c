@@ -33,7 +33,7 @@
 
  UART_Status_t SetBaudRate(uint32_t baudrate) {
     if (baudrate == 0) return UART_ERROR;
-    uint32_t pclk = 8000000;
+    uint32_t pclk = 72000000;
     uint32_t RY_USARTdiv = (pclk + (baudrate / 2)) / baudrate;
     RY_USART1->BRR.BITS.DIV_Mantissa = (RY_USARTdiv >> 4) & 0xFFF;
     RY_USART1->BRR.BITS.DIV_Fraction = RY_USARTdiv & 0xF;

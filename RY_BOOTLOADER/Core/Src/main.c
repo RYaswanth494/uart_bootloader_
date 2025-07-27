@@ -36,19 +36,20 @@ HEX_STRUCTURE hex_records[MAX_RECORDS];
 #define CMD_BEGIN  0x01
 #define CMD_DATA   0x02
 #define CMD_END    0x03
-volatile uint32_t firmware_size = 0;
+uint32_t complete_check_sum=0;
+
 int main(){
-	RCC_SYSTEM_CLOCK_HSE();
-	HAL_Init();
+	RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
+//	RCC_SYSTEM_CLOCK_HSE();
+	 HAL_Init();
 	uint32_t start=HAL_GetTick();
 	//RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
-	UART2_INIT(BAUD_RATE);
-	//SendString2("Started............");
+//	UART2_INIT(BAUD_RATE);
+//	SendString("Started............");
 	//SendString2("waiting............");
   //  SYSTEM_CLOCK_TEST();
-	uint32_t complete_check_sum=0;
 	while(1){
 		while(!((HAL_GetTick()-start)>10000)){
             if((RY_USART1->SR.BITS.RXNE)){
@@ -57,7 +58,6 @@ int main(){
                	SendByte(CMD_ACK);
                }
                else if (cmd == CMD_BEGIN) {
-               //	RY_FLASH_EraseAppRegion();
             	   record_index=0;
             	   complete_check_sum=0;
                    SendByte(CMD_ACK);
@@ -70,8 +70,8 @@ int main(){
             	  HEX_STRUCTURE *rec = &hex_records[record_index];
             	  rec->address |=((((uint32_t)uart_recv()<<8))|((uint32_t)uart_recv()<<0));
             	  rec->Byte_count= uart_recv();
-            	  uint8_t checksum = rec->Byte_count +
-            	                                 ((rec->address >> 8) & 0xFF) +
+            	  uint8_t checksum = rec->Byte_count +    \
+            	                                 ((rec->address >> 8) & 0xFF) +  \
             	                                 (rec->address & 0xFF);
                   for (uint8_t i = 0; i < rec->Byte_count; i++) {
 					  rec->data[i] = uart_recv();
@@ -79,11 +79,9 @@ int main(){
 				  }
             	  checksum = (~checksum) + 1;
             	 rec->check_sum = uart_recv();
-            	 SendByte2(checksum);
 				  if (checksum == rec->check_sum) {
 					  complete_check_sum += checksum;
 					  record_index++;
-					  TOGGLE_LED();
 					  SendByte(CMD_ACK);
 				  } else {
 					  SendByte(CMD_NACK);

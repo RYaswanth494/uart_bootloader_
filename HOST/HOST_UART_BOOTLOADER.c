@@ -107,7 +107,6 @@ printf("commands ok\n");
     uint32_t ext_addr = 0,complete_check_sum=0;
 
     while (fgets(line, sizeof(line), f)) {
-        printf("start\n");
         if (line[0] != ':') continue;
 
         uint8_t len = hex2byte(&line[1]);
@@ -115,7 +114,7 @@ printf("commands ok\n");
         uint8_t type = hex2byte(&line[7]);
 
         if (type == 0x00) {  // Data record
-            uint32_t addr = offset;
+            uint32_t addr = ext_addr+offset;
             printf("Sending Addr: 0x%06X, Len: %d, offset :0x%02x Data: ", addr, len,offset);
 
             send_byte(hSerial, CMD_DATA);
@@ -140,8 +139,6 @@ printf("commands ok\n");
                 printf("No ACK for DATA at addr 0x%06X\n", addr);
                 return 1;
             }
-                    printf("done\n");
-
         }
         else if (type == 0x01) {  // End of file
             break;

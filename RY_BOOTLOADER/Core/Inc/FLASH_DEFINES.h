@@ -13,7 +13,6 @@ typedef enum {
  RY_FLASH_ERR_PG,
  RY_FLASH_ERR_WRPRT,
  RY_FLASH_ERR_VERIFY
-
 } RY_FLASH_Status;
 #define RY_FLASH_BASE      0x40022000
 #define RY_FLASH_ACR_LATENCY_0WS    (0 << 0)  // 0 wait states
