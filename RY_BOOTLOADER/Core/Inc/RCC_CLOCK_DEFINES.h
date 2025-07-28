@@ -11,6 +11,8 @@
 #include<stdint.h>
 
 #include"RCC_STRUCTURES.h"
+#define HSI_VALUE 8000000UL
+#define HSE_VALUE 8000000UL
 //#define RCC_RY ((RCC_RY_TYPEDEF *)0x40021000UL)
 
 #endif /* INC_RCC_CLOCK_DEFINES_H_ */

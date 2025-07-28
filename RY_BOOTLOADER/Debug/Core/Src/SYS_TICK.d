@@ -1,10 +1,8 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/RCC_CLOCK_DEFINES.h \
- ../Core/Inc/RCC_STRUCTURES.h ../Core/Inc/RCC_DECLARATIONS.h \
- ../Core/Inc/GPIO_STRUCTURES.h ../Core/Inc/FLASH_DECLARATIONS.h \
- ../Core/Inc/FLASH_DEFINES.h ../Core/Inc/SYSTICK_DECLARATIONS.h \
- ../Core/Inc/LED.h ../Core/Inc/UART_DECLARATIONS.h \
- ../Core/Inc/UART_DEFINES.h ../Core/Inc/UART_STRUCTURES.h \
- ../Core/Inc/HEX_STRUCTURES.h \
+Core/Src/SYS_TICK.o: ../Core/Src/SYS_TICK.c ../Core/Inc/main.h \
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
+ ../Core/Inc/stm32f1xx_hal_conf.h \
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h \
  ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h \
  ../Drivers/CMSIS/Include/core_cm3.h \
@@ -12,10 +10,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/RCC_CLOCK_DEFINES.h \
  ../Drivers/CMSIS/Include/cmsis_compiler.h \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
- ../Core/Inc/stm32f1xx_hal_conf.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h \
@@ -26,19 +20,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/RCC_CLOCK_DEFINES.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h \
- ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
-../Core/Inc/RCC_CLOCK_DEFINES.h:
-../Core/Inc/RCC_STRUCTURES.h:
-../Core/Inc/RCC_DECLARATIONS.h:
-../Core/Inc/GPIO_STRUCTURES.h:
-../Core/Inc/FLASH_DECLARATIONS.h:
-../Core/Inc/FLASH_DEFINES.h:
-../Core/Inc/SYSTICK_DECLARATIONS.h:
-../Core/Inc/LED.h:
-../Core/Inc/UART_DECLARATIONS.h:
-../Core/Inc/UART_DEFINES.h:
-../Core/Inc/UART_STRUCTURES.h:
-../Core/Inc/HEX_STRUCTURES.h:
+ ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
+ ../Core/Inc/SYSTICK_STRUCTURES.h ../Core/Inc/SYSTICK_DECLARATIONS.h
+../Core/Inc/main.h:
+../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
+../Core/Inc/stm32f1xx_hal_conf.h:
+../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h:
+../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h:
 ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h:
 ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h:
 ../Drivers/CMSIS/Include/core_cm3.h:
@@ -46,10 +34,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/RCC_CLOCK_DEFINES.h \
 ../Drivers/CMSIS/Include/cmsis_compiler.h:
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
-../Core/Inc/stm32f1xx_hal_conf.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h:
-../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h:
@@ -61,3 +45,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/RCC_CLOCK_DEFINES.h \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h:
+../Core/Inc/SYSTICK_STRUCTURES.h:
+../Core/Inc/SYSTICK_DECLARATIONS.h:

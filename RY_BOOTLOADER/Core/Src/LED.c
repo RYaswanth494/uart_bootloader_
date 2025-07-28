@@ -27,6 +27,6 @@ void LED_INIT(){
 	 //   GPIOB_CRL |=  (0x2 << 8);     // MODE2 = 10 (Output 2 MHz), CNF2 = 00 (General purpose output push-pull)
 }
 void TOGGLE_LED(){
-    //GPIOB_ODR ^=(1 << 2); ;
-	RY_GPIOB->ODR.BITS.ODR2=1;
+    GPIOB_ODR ^=(1 << 2); ;
+	//RY_GPIOB->ODR.BITS.ODR2=1;
 	}

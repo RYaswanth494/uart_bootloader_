@@ -2,6 +2,7 @@
 #include"RCC_DECLARATIONS.h"
 #include"GPIO_STRUCTURES.h"
 #include"FLASH_DECLARATIONS.h"
+#include"SYSTICK_DECLARATIONS.h"
 #include"LED.h"
 #include"UART_DECLARATIONS.h"
 #include"UART_STRUCTURES.h"
@@ -37,13 +38,13 @@ HEX_STRUCTURE hex_records[MAX_RECORDS];
 #define CMD_DATA   0x02
 #define CMD_END    0x03
 uint32_t complete_check_sum=0;
-
+uint32_t SYSTEM_CLOCK=0;
+uint32_t now=0;
 int main(){
 	RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
-//	RCC_SYSTEM_CLOCK_HSE();
-	 HAL_Init();
-	uint32_t start=HAL_GetTick();
-	//RCC_SYSTEM_CLOCK_HSEPLL_72MHZ();
+	systick.init(72000);
+    systick.reset();
+	SYSTEM_CLOCK=0;
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
 //	UART2_INIT(BAUD_RATE);
@@ -51,7 +52,8 @@ int main(){
 	//SendString2("waiting............");
   //  SYSTEM_CLOCK_TEST();
 	while(1){
-		while(!((HAL_GetTick()-start)>10000)){
+		while (systick.get_ms()< 10000)
+		{
             if((RY_USART1->SR.BITS.RXNE)){
        		 uint8_t cmd = uart_recv();
                   if(cmd == CMD_HELLO) {
@@ -70,8 +72,8 @@ int main(){
             	  HEX_STRUCTURE *rec = &hex_records[record_index];
             	  rec->address |=((((uint32_t)uart_recv()<<8))|((uint32_t)uart_recv()<<0));
             	  rec->Byte_count= uart_recv();
-            	  uint8_t checksum = rec->Byte_count +    \
-            	                                 ((rec->address >> 8) & 0xFF) +  \
+            	  uint8_t checksum = rec->Byte_count +
+            	                                 ((rec->address >> 8) & 0xFF) +
             	                                 (rec->address & 0xFF);
                   for (uint8_t i = 0; i < rec->Byte_count; i++) {
 					  rec->data[i] = uart_recv();
@@ -106,15 +108,5 @@ int main(){
             }
 		}
         jump_to_application();
-		//uart_tx('j');
-//		for(int i=0;i<8;i++){
-//			TOGGLE_LED();
-//			for(int j=0;j<100000;j++);
-//		}
-//		uint32_t delay_ms = 500;
-//		RY_FLASH_ErasePage(DELAY_VALUE_ADDR);  // Optional: Only if not already erased
-//		RY_FLASH_ProgramBuffer(DELAY_VALUE_ADDR, (uint8_t*)&delay_ms, sizeof(delay_ms));
-//
-//		jump_to_application();
 	}
 }

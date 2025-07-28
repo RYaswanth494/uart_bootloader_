@@ -102,6 +102,47 @@ void RCC_SYSTEM_CLOCK_HSEPLL_72MHZ(){
 	 while (RY_RCC->CFGR.BITS.SWS != 0b10);
 
 }
+uint32_t GetSystemClockHz(void)
+{
+    uint32_t sysclk = 0;
+
+    switch (RY_RCC->CFGR.BITS.SWS)
+    {
+        case 0x00: // HSI used as system clock
+            sysclk = HSI_VALUE;
+            break;
+
+        case 0x01: // HSE used as system clock
+            sysclk = HSE_VALUE;
+            break;
+
+        case 0x02: // PLL used as system clock
+        {
+            uint32_t pllmul = RY_RCC->CFGR.BITS.PLLMULL + 2;
+            if (pllmul == 17) pllmul = 16;  // 0xF means x16
+
+            if (RY_RCC->CFGR.BITS.PLLSRC == 0)
+            {
+                // PLL source is HSI / 2
+                sysclk = (HSI_VALUE / 2) * pllmul;
+            }
+            else
+            {
+                // PLL source is HSE or HSE/2
+                uint32_t hse_input = (RY_RCC->CFGR.BITS.PLLXTPRE) ? (HSE_VALUE / 2) : HSE_VALUE;
+                sysclk = hse_input * pllmul;
+            }
+            break;
+        }
+
+        default: // Invalid
+            sysclk = 0;
+            break;
+    }
+
+    return sysclk;
+}
+
 //void SYSTEM_CLOCK_TEST(){
 //    // Enable GPIOA clock
 //    RCC_APB2ENR |= RCC_APB2ENR_IOPAEN;
