@@ -21,7 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#define BUTTON_PIN       0       // PA0
+#define LED_PIN        2        // PB2
+#define DEBOUNCE_TIME    50      // ms
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,24 +33,55 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+void GPIO_init(void) {
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN;  // Enable GPIOA clock
 
+    // PA0 as floating input
+    GPIOA->CRL &= ~(0xF << (BUTTON_PIN * 4));  // Clear MODE/CNF
+    GPIOA->CRL |=  (0x4 << (BUTTON_PIN * 4));  // CNF = 01 (floating input), MODE = 00
+    GPIOA->ODR&=~(1<<BUTTON_PIN);
+    // PB0 as push-pull output, 2 MHz
+    // PB2 as output push-pull, 2 MHz
+    GPIOB->CRL &= ~(0xF << (LED_PIN * 4));
+    GPIOB->CRL |=  (0x2 << (LED_PIN * 4));     // MODE=10 (2 MHz), CNF=00
+    GPIOB->ODR &= ~(1 << LED_PIN);
+}
+uint8_t read_button(void) {
+    return ((GPIOA->IDR & (1 << BUTTON_PIN)) != 0);  // HIGH = pressed
+}
+// Initialize SysTick to trigger every 1ms
+void SysTick_Init(void) {
+    // SystemCoreClock should be 72 MHz (set in startup or defined globally)
+    SysTick->LOAD  = (72000000 / 1000) - 1;  // 72,000 - 1 = 71,999
+    SysTick->VAL   = 0;                             // Clear current value
+    SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |   // Use processor clock
+                     SysTick_CTRL_TICKINT_Msk   |   // Enable SysTick interrupt
+                     SysTick_CTRL_ENABLE_Msk;       // Enable SysTick
+}
+// Turn LED ON
+void led_on(void) {
+    GPIOB->ODR |= (1 << LED_PIN);
+}
+// Turn LED OFF
+void led_off(void) {
+    GPIOB->ODR &= ~(1 << LED_PIN);
+}
 /* USER CODE END PD */
-#define DELAY_VALUE_ADDR   ((uint32_t *)0x0801FC00)
+
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-void delay(volatile uint32_t t) {
-    while (t--);
-}
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+volatile uint32_t mytick=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -66,6 +99,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+uint32_t last_debounce=0;
+uint8_t last_read=0,current_read=0,button_state=0;
 
   /* USER CODE END 1 */
 
@@ -82,28 +117,36 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  // Enable GPIOB clock
-  RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
 
-  // Configure PB2 as output push-pull, 2 MHz
-  GPIOB->CRL &= ~(0xF << 8);    // Clear MODE2[1:0] and CNF2[1:0]
-  GPIOB->CRL |=  (0x2 << 8);    // MODE2 = 10 (Output 2 MHz), CNF2 = 00 (Push-pull)
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  uint32_t delay_ms = *DELAY_VALUE_ADDR;
-  if (delay_ms == 0xFFFFFFFF || delay_ms == 0) {
-      delay_ms = 500; // Default
-  }
+  GPIO_init();
+  SysTick_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      GPIOB->ODR ^= (1 << 2);  // Toggle PB2
-      HAL_Delay(250);
+current_read=read_button();
+if(current_read!=last_read){
+	last_debounce=mytick;
+}
+if((mytick-last_debounce)>DEBOUNCE_TIME){
+	if(button_state!=current_read){
+		button_state=current_read;
+		if(button_state){
+			led_on();
+		}else{
+			led_off();
+		}
+	}
+}
+last_read = current_read;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -123,10 +166,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -136,15 +182,34 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+
+  /* USER CODE END MX_GPIO_Init_1 */
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -165,8 +230,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

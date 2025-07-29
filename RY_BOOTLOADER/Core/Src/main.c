@@ -47,13 +47,11 @@ int main(){
 	SYSTEM_CLOCK=0;
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
-//	UART2_INIT(BAUD_RATE);
-//	SendString("Started............");
-	//SendString2("waiting............");
-  //  SYSTEM_CLOCK_TEST();
+	TOGGLE_LED();
 	while(1){
 		while (systick.get_ms()< 10000)
 		{
+			TOGGLE_LED();
             if((RY_USART1->SR.BITS.RXNE)){
        		 uint8_t cmd = uart_recv();
                   if(cmd == CMD_HELLO) {
@@ -102,6 +100,7 @@ int main(){
                        jump_to_application();  // jump to app at 0x08004000
             	   }else{
                      	SendByte(CMD_NACK);
+                     	TOGGLE_LED();
                      	jump_to_application();
             	   }
                }
