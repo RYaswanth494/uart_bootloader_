@@ -24,6 +24,7 @@
 #define BUTTON_PIN       0       // PA0
 #define LED_PIN        2        // PB2
 #define DEBOUNCE_TIME    50      // ms
+#define BOOT_ADDRESS 0X08000000
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,7 +39,7 @@ void GPIO_init(void) {
 
     // PA0 as floating input
     GPIOA->CRL &= ~(0xF << (BUTTON_PIN * 4));  // Clear MODE/CNF
-    GPIOA->CRL |=  (0x4 << (BUTTON_PIN * 4));  // CNF = 01 (floating input), MODE = 00
+    GPIOA->CRL |=  (0b1000 << (BUTTON_PIN * 4));  // CNF = 01 (floating input), MODE = 00
     GPIOA->ODR&=~(1<<BUTTON_PIN);
     // PB0 as push-pull output, 2 MHz
     // PB2 as output push-pull, 2 MHz
@@ -51,6 +52,7 @@ uint8_t read_button(void) {
 }
 // Initialize SysTick to trigger every 1ms
 void SysTick_Init(void) {
+	int a=9;
     // SystemCoreClock should be 72 MHz (set in startup or defined globally)
     SysTick->LOAD  = (72000000 / 1000) - 1;  // 72,000 - 1 = 71,999
     SysTick->VAL   = 0;                             // Clear current value
@@ -65,6 +67,21 @@ void led_on(void) {
 // Turn LED OFF
 void led_off(void) {
     GPIOB->ODR &= ~(1 << LED_PIN);
+}
+void jump_to_bootloader(void) {
+    // 1. Read the MSP and Reset Handler from application vector table
+    uint32_t boot_stack = *(volatile uint32_t*)(BOOT_ADDRESS);
+    uint32_t boot_reset = *(volatile uint32_t*)(BOOT_ADDRESS + 4);
+
+    // 2. Set the Vector Table base
+    SCB->VTOR = BOOT_ADDRESS;
+
+    // 3. Set the Main Stack Pointer
+    __set_MSP(boot_stack);
+
+    // 4. Jump to the application's Reset Handler
+    void (*boot_entry)(void) = (void*)boot_reset;
+    boot_entry();
 }
 /* USER CODE END PD */
 
@@ -101,7 +118,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 uint32_t last_debounce=0;
 uint8_t last_read=0,current_read=0,button_state=0;
-
+static uint8_t cnt=0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -140,7 +157,11 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 	if(button_state!=current_read){
 		button_state=current_read;
 		if(button_state){
+			cnt++;
 			led_on();
+			if(cnt==5){
+				jump_to_bootloader();
+			}
 		}else{
 			led_off();
 		}
