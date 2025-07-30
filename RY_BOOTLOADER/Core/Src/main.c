@@ -47,7 +47,10 @@ int main(){
 	SYSTEM_CLOCK=0;
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
-	TOGGLE_LED();
+	for(int i=0;i<10;i++){
+		TOGGLE_LED();
+		HAL_Delay(100);
+	}
 	while(1){
 		while (systick.get_ms()< 10000)
 		{
