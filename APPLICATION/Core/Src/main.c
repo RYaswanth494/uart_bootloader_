@@ -25,6 +25,8 @@
 #define LED_PIN        2        // PB2
 #define DEBOUNCE_TIME    50      // ms
 #define BOOT_ADDRESS 0X08000000
+#define BOOTLOADER_MAGIC 0xDEADBEEF
+#define BOOTLOADER_FLAG_ADDR ((volatile uint32_t*)0x2000FFF0)
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +38,6 @@
 /* USER CODE BEGIN PD */
 void GPIO_init(void) {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN;  // Enable GPIOA clock
-
     // PA0 as floating input
     GPIOA->CRL &= ~(0xF << (BUTTON_PIN * 4));  // Clear MODE/CNF
     GPIOA->CRL |=  (0b1000 << (BUTTON_PIN * 4));  // CNF = 01 (floating input), MODE = 00
@@ -52,7 +53,6 @@ uint8_t read_button(void) {
 }
 // Initialize SysTick to trigger every 1ms
 void SysTick_Init(void) {
-	int a=9;
     // SystemCoreClock should be 72 MHz (set in startup or defined globally)
     SysTick->LOAD  = (72000000 / 1000) - 1;  // 72,000 - 1 = 71,999
     SysTick->VAL   = 0;                             // Clear current value
@@ -72,16 +72,19 @@ void jump_to_bootloader(void) {
     // 1. Read the MSP and Reset Handler from application vector table
     uint32_t boot_stack = *(volatile uint32_t*)(BOOT_ADDRESS);
     uint32_t boot_reset = *(volatile uint32_t*)(BOOT_ADDRESS + 4);
-
     // 2. Set the Vector Table base
     SCB->VTOR = BOOT_ADDRESS;
-
     // 3. Set the Main Stack Pointer
     __set_MSP(boot_stack);
-
     // 4. Jump to the application's Reset Handler
     void (*boot_entry)(void) = (void*)boot_reset;
     boot_entry();
+}
+void check_for_bootloader_flag(void) {
+    if (*BOOTLOADER_FLAG_ADDR == BOOTLOADER_MAGIC) {
+        *BOOTLOADER_FLAG_ADDR = 0;
+        jump_to_bootloader();
+    }
 }
 /* USER CODE END PD */
 
@@ -141,6 +144,7 @@ static uint8_t cnt=0;
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+//  check_for_bootloader_flag();
   GPIO_init();
   SysTick_Init();
   /* USER CODE END 2 */
@@ -160,7 +164,8 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 			cnt++;
 			led_on();
 			if(cnt==5){
-				jump_to_bootloader();
+				volatile uint32_t *bad = (uint32_t*)0xFFFFFFF0; // Invalid address
+				uint32_t val = *bad;  // Will cause HardFault
 			}
 		}else{
 			led_off();

@@ -26,7 +26,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-
+#define BOOTLOADER_MAGIC 0xDEADBEEF
+#define BOOTLOADER_FLAG_ADDR ((volatile uint32_t*)0x2000FFF0)
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -58,6 +59,7 @@
 
 /* USER CODE BEGIN EV */
  extern volatile uint32_t mytick;
+ void jump_to_bootloader(void);
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -81,16 +83,14 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-void HardFault_Handler(void)
-{
-  /* USER CODE BEGIN HardFault_IRQn 0 */
-
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+__attribute__((naked)) void HardFault_Handler(void) {
+    __asm volatile (
+        "ldr r0, =0x08000000\n"         // Bootloader address
+        "ldr r1, [r0, #0]\n"            // Load MSP from bootloader vector
+        "ldr r2, [r0, #4]\n"            // Load Reset_Handler address
+        "msr MSP, r1\n"                 // Set MSP
+        "bx r2\n"                       // Jump to bootloader Reset_Handler
+    );
 }
 
 /**
