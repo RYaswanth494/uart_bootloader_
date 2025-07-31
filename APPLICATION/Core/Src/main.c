@@ -163,7 +163,11 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
-			if(cnt==10){
+			if(cnt==9){//dereferenceing null pointer
+				volatile uint32_t *ptr = (uint32_t *)0x00000000;
+				*ptr = 0x12345678;  // causes Hard Fault
+			}
+			if(cnt==10){//unaligned memory access
 				volatile uint32_t *bad = (uint32_t*)0xFFFFFFF0; // Invalid address
 				uint32_t val = *bad;  // Will cause HardFault
 			}
