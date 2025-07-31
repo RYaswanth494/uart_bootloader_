@@ -80,6 +80,10 @@ void jump_to_bootloader(void) {
     void (*boot_entry)(void) = (void*)boot_reset;
     boot_entry();
 }
+void recurse(void) {
+	recurse();
+}
+
 void check_for_bootloader_flag(void) {
     if (*BOOTLOADER_FLAG_ADDR == BOOTLOADER_MAGIC) {
         *BOOTLOADER_FLAG_ADDR = 0;
@@ -163,6 +167,9 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
+			if(cnt==7){//stack over flow/corruption
+				recurse();  // eventually triggers Hard Fault
+			}
 			if(cnt==8){//executing code from invalid memory
 				void (*invalid_code)(void) = (void *)0xFFFFFFF1;
 				invalid_code();  // crashes
