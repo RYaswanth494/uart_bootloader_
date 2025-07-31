@@ -163,6 +163,10 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
+			if(cnt==8){//executing code from invalid memory
+				void (*invalid_code)(void) = (void *)0xFFFFFFF1;
+				invalid_code();  // crashes
+			}
 			if(cnt==9){//dereferenceing null pointer
 				volatile uint32_t *ptr = (uint32_t *)0x00000000;
 				*ptr = 0x12345678;  // causes Hard Fault
