@@ -163,7 +163,7 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
-			if(cnt==5){
+			if(cnt==10){
 				volatile uint32_t *bad = (uint32_t*)0xFFFFFFF0; // Invalid address
 				uint32_t val = *bad;  // Will cause HardFault
 			}

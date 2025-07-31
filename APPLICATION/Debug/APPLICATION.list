@@ -323,10 +323,10 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
  80042a4:	701a      	strb	r2, [r3, #0]
 			led_on();
  80042a6:	f7ff ffad 	bl	8004204 <led_on>
-			if(cnt==5){
+			if(cnt==10){
  80042aa:	4b09      	ldr	r3, [pc, #36]	@ (80042d0 <main+0x94>)
  80042ac:	781b      	ldrb	r3, [r3, #0]
- 80042ae:	2b05      	cmp	r3, #5
+ 80042ae:	2b0a      	cmp	r3, #10
  80042b0:	d108      	bne.n	80042c4 <main+0x88>
 				volatile uint32_t *bad = (uint32_t*)0xFFFFFFF0; // Invalid address
  80042b2:	f06f 030f 	mvn.w	r3, #15
