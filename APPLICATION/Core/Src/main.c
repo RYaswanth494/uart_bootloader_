@@ -21,12 +21,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#define BOOT_FLAG_ADDR  (0x20003FF0) // Last 16 bytes of RAM (example)
 #define BUTTON_PIN       0       // PA0
 #define LED_PIN        2        // PB2
 #define DEBOUNCE_TIME    50      // ms
 #define BOOT_ADDRESS 0X08000000
-#define BOOTLOADER_MAGIC 0xDEADBEEF
-#define BOOTLOADER_FLAG_ADDR ((volatile uint32_t*)0x2000FFF0)
+ volatile uint32_t hardfault_flag;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,12 +84,7 @@ void recurse(void) {
 	recurse();
 }
 
-void check_for_bootloader_flag(void) {
-    if (*BOOTLOADER_FLAG_ADDR == BOOTLOADER_MAGIC) {
-        *BOOTLOADER_FLAG_ADDR = 0;
-        jump_to_bootloader();
-    }
-}
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -142,7 +137,6 @@ static uint8_t cnt=0;
 
   /* USER CODE BEGIN SysInit */
 
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -167,11 +161,10 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
-			if(cnt==6){
-				// Enable UsageFault and division-by-zero trap
+			if(cnt==6){// Enable UsageFault and division-by-zero trap
 				SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;    // Enable UsageFault
 				SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk;          // Trap divide-by-zero
-                int a=1/0;
+                int a=(1/0);
 			}
 			if(cnt==7){//stack over flow/corruption
 				recurse();  // eventually triggers Hard Fault

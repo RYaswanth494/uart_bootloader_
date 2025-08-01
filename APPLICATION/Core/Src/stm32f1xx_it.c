@@ -26,8 +26,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-#define BOOTLOADER_MAGIC 0xDEADBEEF
-#define BOOTLOADER_FLAG_ADDR ((volatile uint32_t*)0x2000FFF0)
+extern volatile uint32_t hardfault_flag;
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -47,6 +46,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+#define BOOT_FLAG_ADDR  (0x20003FF0) // Last 16 bytes of RAM (example)
 
 /* USER CODE END PFP */
 
@@ -59,7 +59,7 @@
 
 /* USER CODE BEGIN EV */
  extern volatile uint32_t mytick;
- void jump_to_bootloader(void);
+
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -76,6 +76,8 @@ void NMI_Handler(void)
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
    while (1)
   {
+		NVIC_SystemReset();
+
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
@@ -83,16 +85,18 @@ void NMI_Handler(void)
 /**
   * @brief This function handles Hard fault interrupt.
   */
-__attribute__((naked)) void HardFault_Handler(void) {
-    __asm volatile (
-        "ldr r0, =0x08000000\n"         // Bootloader address
-        "ldr r1, [r0, #0]\n"            // Load MSP from bootloader vector
-        "ldr r2, [r0, #4]\n"            // Load Reset_Handler address
-        "msr MSP, r1\n"                 // Set MSP
-        "bx r2\n"                       // Jump to bootloader Reset_Handler
-    );
-}
+void HardFault_Handler(void)
+{
+  /* USER CODE BEGIN HardFault_IRQn 0 */
+  /* USER CODE END HardFault_IRQn 0 */
+  while (1)
+  {
+    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+		NVIC_SystemReset();
 
+    /* USER CODE END W1_HardFault_IRQn 0 */
+  }
+}
 /**
   * @brief This function handles Memory management fault.
   */
@@ -104,6 +108,8 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
+		NVIC_SystemReset();
+
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
 }
@@ -119,6 +125,8 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
+		NVIC_SystemReset();
+
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
 }
@@ -134,6 +142,8 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
+		NVIC_SystemReset();
+
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
 }
@@ -146,6 +156,8 @@ void SVC_Handler(void)
   /* USER CODE BEGIN SVCall_IRQn 0 */
 
   /* USER CODE END SVCall_IRQn 0 */
+	NVIC_SystemReset();
+
   /* USER CODE BEGIN SVCall_IRQn 1 */
 
   /* USER CODE END SVCall_IRQn 1 */
@@ -159,6 +171,8 @@ void DebugMon_Handler(void)
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 
   /* USER CODE END DebugMonitor_IRQn 0 */
+	NVIC_SystemReset();
+
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
 
   /* USER CODE END DebugMonitor_IRQn 1 */
@@ -172,6 +186,8 @@ void PendSV_Handler(void)
   /* USER CODE BEGIN PendSV_IRQn 0 */
 
   /* USER CODE END PendSV_IRQn 0 */
+	NVIC_SystemReset();
+
   /* USER CODE BEGIN PendSV_IRQn 1 */
 
   /* USER CODE END PendSV_IRQn 1 */
