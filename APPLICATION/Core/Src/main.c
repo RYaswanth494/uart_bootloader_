@@ -21,21 +21,41 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include"math.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
 #define BOOT_FLAG_ADDR  (0x20003FF0) // Last 16 bytes of RAM (example)
 #define BUTTON_PIN       0       // PA0
 #define LED_PIN        2        // PB2
 #define DEBOUNCE_TIME    50      // ms
 #define BOOT_ADDRESS 0X08000000
+#define DEMCR           (*((volatile uint32_t*)0xE000EDFC))
+#define DWT_CTRL        (*((volatile uint32_t*)0xE0001000))
+#define DWT_CYCCNT      (*((volatile uint32_t*)0xE0001004))
  volatile uint32_t hardfault_flag;
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+ void test_function(void)
+ {
+     for (volatile int i = 0; i < 1000; i++);
+ }
+void DWT_Init(void) {
+    DEMCR |= (1 << 24);      // Enable TRC
+    DWT_CYCCNT = 0;          // Clear the cycle counter
+    DWT_CTRL |= 1;           // Enable the cycle counter
+}
+
+uint32_t measure_function_time(void (*func)(void)) {
+    DWT_CYCCNT = 0;          // Reset counter
+    func();                  // Call the function
+    return DWT_CYCCNT;       // Return cycle count
+}
+
 void GPIO_init(void) {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN|RCC_APB2ENR_IOPBEN;  // Enable GPIOA clock
     // PA0 as floating input
@@ -83,6 +103,116 @@ void jump_to_bootloader(void) {
 void recurse(void) {
 	recurse();
 }
+
+void UART1_Init(void) {
+    // 1. Enable clocks for GPIOA and USART1
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;   // GPIOA clock
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN; // USART1 clock
+
+    // 2. Configure PA9 (TX) as Alternate function push-pull
+    GPIOA->CRH &= ~(0xF << 4);          // Clear bits for PA9
+    GPIOA->CRH |=  (0xB << 4);          // 0xB = 1011: Output 50 MHz, AF Push-pull
+
+    // 3. Configure PA10 (RX) as input floating
+    GPIOA->CRH &= ~(0xF << 8);          // Clear bits for PA10
+    GPIOA->CRH |=  (0x4 << 8);          // 0x4 = 0100: Input floating
+
+    // 4. Set baud rate
+    USART1->BRR = 0x1D4C;  // For 72MHz clock and 115200 baud: 72MHz / 115200 ≈ 625 (0x0271 or 0x1D4C depending on oversampling)
+
+    // 5. Enable USART1, TX and RX
+    USART1->CR1 |= USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+}
+
+void UART1_SendChar(char c) {
+    while (!(USART1->SR & USART_SR_TXE)); // Wait until transmit data register is empty
+    USART1->DR = c;
+}
+
+char UART1_ReceiveChar(void) {
+    while (!(USART1->SR & USART_SR_RXNE)); // Wait until data received
+    return USART1->DR;
+}
+
+void uart_send_string(const char* str) {
+    while (*str) {
+        UART1_SendChar(*str++);
+    }
+}
+void itoa(int num, char* str) {
+    int i = 0, isNegative = 0;
+
+    if (num == 0) {
+        str[i++] = '0';
+        str[i] = '\0';
+        return;
+    }
+
+    if (num < 0) {
+        isNegative = 1;
+        num = -num;
+    }
+
+    while (num != 0) {
+        int rem = num % 10;
+        str[i++] = rem + '0';
+        num = num / 10;
+    }
+
+    if (isNegative)
+        str[i++] = '-';
+
+    str[i] = '\0';
+
+    // reverse the string
+    for (int j = 0, k = i - 1; j < k; j++, k--) {
+        char temp = str[j];
+        str[j] = str[k];
+        str[k] = temp;
+    }
+}
+float atof(const char* str) {
+    float result = 0.0, fraction = 0.0;
+    int sign = 1, i = 0, divisor = 1;
+
+    if (str[0] == '-') {
+        sign = -1;
+        i++;
+    }
+
+    while (str[i] && str[i] != '.') {
+        result = result * 10.0 + (str[i] - '0');
+        i++;
+    }
+
+    if (str[i] == '.') {
+        i++;
+        while (str[i]) {
+            fraction = fraction * 10.0 + (str[i] - '0');
+            divisor *= 10;
+            i++;
+        }
+        result += fraction / divisor;
+    }
+
+    return sign * result;
+}
+void ftoa(float n, char* res, int afterpoint) {
+    int ipart = (int)n;
+    float fpart = n - (float)ipart;
+
+    itoa(ipart, res);
+
+    int i = 0;
+    while (res[i] != '\0') i++;
+
+    res[i++] = '.';
+
+    fpart = fpart * pow(10, afterpoint);
+
+    itoa((int)fpart, res + i);
+}
+
 
 
 /* USER CODE END PD */
@@ -134,7 +264,6 @@ static uint8_t cnt=0;
 
   /* Configure the system clock */
   SystemClock_Config();
-
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -142,15 +271,22 @@ static uint8_t cnt=0;
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-//  check_for_bootloader_flag();
-  GPIO_init();
-  SysTick_Init();
+  DWT_Init();
+  //GPIO_init();
+  //SysTick_Init();
+  char buf[10];
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  uint32_t cycles = measure_function_time(test_function);
+	  float time_us = (float)cycles / 72.0;
+ftoa(time_us, buf, 3);  // 3 decimal places
+uart_send_string(buf);
+uart_send_string("\n");
+HAL_Delay(1000);
 current_read=read_button();
 if(current_read!=last_read){
 	last_debounce=mytick;
@@ -161,7 +297,7 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
-			if(cnt==6){// Enable UsageFault and division-by-zero trap
+			if(cnt==16){// Enable UsageFault and division-by-zero trap
 				SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;    // Enable UsageFault
 				SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk;          // Trap divide-by-zero
                 int a=(1/0);
