@@ -47,14 +47,10 @@ int main(){
 	SYSTEM_CLOCK=0;
 	LED_INIT();
 	UART1_INIT(BAUD_RATE);
-	for(int i=0;i<10;i++){
-		TOGGLE_LED();
-		for(int i=0;i<1000;i++);
-	}
 	while(1){
 		while (systick.get_ms()< 1500)
 		{
-			TOGGLE_LED();
+			//TOGGLE_LED();
             if((RY_USART1->SR.BITS.RXNE)){
        		 uint8_t cmd = uart_recv();
                   if(cmd == CMD_HELLO) {

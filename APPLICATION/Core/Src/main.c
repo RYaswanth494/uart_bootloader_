@@ -103,7 +103,24 @@ void jump_to_bootloader(void) {
 void recurse(void) {
 	recurse();
 }
-
+void IWDG_Refresh(void)
+{
+    // Write the reload key to refresh the watchdog
+    IWDG->KR = 0xAAAA;
+}
+void IWDG_Init(void)
+{
+    // Enable write access to IWDG_PR and IWDG_RLR
+    IWDG->KR = 0x5555;
+    // Set prescaler to 32
+    IWDG->PR = 0x03; // 0=4, 1=8, 2=16, 3=32, 4=64, 5=128, 6=256
+    // Set reload value for 1 second
+    IWDG->RLR = 1249; // (40000/32) - 1
+    // Reload counter
+    IWDG->KR = 0xAAAA;
+    // Start the watchdog
+    IWDG->KR = 0xCCCC;
+}
 void UART1_Init(void) {
     // 1. Enable clocks for GPIOA and USART1
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;   // GPIOA clock
@@ -272,21 +289,25 @@ static uint8_t cnt=0;
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
   DWT_Init();
-  //GPIO_init();
-  //SysTick_Init();
-  char buf[10];
+  GPIO_init();
+  SysTick_Init();
+  if (RCC->CSR & RCC_CSR_IWDGRSTF) {
+      // Last reset was from Window Watchdog (WWDG)
+	   // Clear all reset flags so they don't stay set
+	   RCC->CSR |= RCC_CSR_RMVF;
+	   while(1){
+		   led_on();
+	   }
+	  //jump_to_bootloader();
+ }
+  IWDG_Init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uint32_t cycles = measure_function_time(test_function);
-	  float time_us = (float)cycles / 72.0;
-ftoa(time_us, buf, 3);  // 3 decimal places
-uart_send_string(buf);
-uart_send_string("\n");
-HAL_Delay(1000);
 current_read=read_button();
 if(current_read!=last_read){
 	last_debounce=mytick;
@@ -322,6 +343,7 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		}
 	}
 }
+IWDG_Refresh();
 last_read = current_read;
     /* USER CODE END WHILE */
 
