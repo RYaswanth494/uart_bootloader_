@@ -1,2 +1,3 @@
 ../Core/Src/LED.c:16:6:LED_INIT	1
-../Core/Src/LED.c:29:6:TOGGLE_LED	1
+../Core/Src/LED.c:23:6:TOGGLE_LED	1
+../Core/Src/LED.c:27:6:STATUS_LEDS_APP_OR_BOOT_INIT	1

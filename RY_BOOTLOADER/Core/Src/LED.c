@@ -19,14 +19,15 @@ void LED_INIT(){
 	//GPIOB->CRL.ALL&=~(0XF<<(2*8));
 	RY_GPIOB->CRL.BITS.CNF2=0b00;
 	RY_GPIOB->CRL.BITS.MODE2=0b10;
-
-
-
-
-	// GPIOB_CRL &= ~(0xF << (2 * 4));
-	 //   GPIOB_CRL |=  (0x2 << 8);     // MODE2 = 10 (Output 2 MHz), CNF2 = 00 (General purpose output push-pull)
 }
 void TOGGLE_LED(){
     GPIOB_ODR ^=(1 << 2); ;
 	//RY_GPIOB->ODR.BITS.ODR2=1;
 	}
+void STATUS_LEDS_APP_OR_BOOT_INIT(){
+	RY_RCC->APB2ENR.BITS.IOPCEN=1;
+	RY_GPIOC->CRH.BITS.CNF13=0b00;
+	RY_GPIOC->CRH.BITS.CNF13=0b10;
+	RY_GPIOC->CRH.BITS.CNF14=0b00;
+	RY_GPIOC->CRH.BITS.CNF14=0b10;
+}

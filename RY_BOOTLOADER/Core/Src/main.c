@@ -46,9 +46,17 @@ int main(){
     systick.reset();
 	SYSTEM_CLOCK=0;
 	LED_INIT();
+	STATUS_LEDS_APP_OR_BOOT_INIT();
+	  if (RCC->CSR & RCC_CSR_IWDGRSTF) {
+		  RY_GPIOC->ODR.BITS.ODR13=1;
+		   RCC->CSR |= RCC_CSR_RMVF;
+		   while(1){
+
+		   }
+	  }
 	UART1_INIT(BAUD_RATE);
 	while(1){
-		while (systick.get_ms()< 1500)
+		while (systick.get_ms()< 10000)
 		{
 			//TOGGLE_LED();
             if((RY_USART1->SR.BITS.RXNE)){
@@ -64,6 +72,7 @@ int main(){
                else if (cmd == CMD_DATA) {
             	  if(record_index>=MAX_RECORDS){
                       SendByte(CMD_NACK);
+                      RY_GPIOC->ODR.BITS.ODR13=1;
                       continue;
             	  }
             	  HEX_STRUCTURE *rec = &hex_records[record_index];
@@ -83,6 +92,7 @@ int main(){
 					  record_index++;
 					  SendByte(CMD_ACK);
 				  } else {
+					  RY_GPIOC->ODR.BITS.ODR13=1;
 					  SendByte(CMD_NACK);
 					  jump_to_application();
 				  }
@@ -96,8 +106,10 @@ int main(){
                             uint32_t absolute_address = 0x08000000 + rec->address;
                             RY_FLASH_ProgramBuffer(absolute_address, rec->data, rec->Byte_count);
                         }
+                        RY_GPIOC->ODR.BITS.ODR14=1;
                        jump_to_application();  // jump to app at 0x08004000
             	   }else{
+            		    RY_GPIOC->ODR.BITS.ODR13=1;
                      	SendByte(CMD_NACK);
                      	TOGGLE_LED();
                      	jump_to_application();
@@ -105,6 +117,7 @@ int main(){
                }
             }
 		}
+		RY_GPIOC->ODR.BITS.ODR14=1;
         jump_to_application();
 	}
 }

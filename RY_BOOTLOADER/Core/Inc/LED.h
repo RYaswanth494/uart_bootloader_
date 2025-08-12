@@ -10,5 +10,5 @@
 
 void LED_INIT();
 void TOGGLE_LED();
-
+void STATUS_LEDS_APP_OR_BOOT_INIT();
 #endif /* INC_LED_H_ */
