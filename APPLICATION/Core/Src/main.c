@@ -318,7 +318,7 @@ if((mytick-last_debounce)>DEBOUNCE_TIME){
 		if(button_state){
 			cnt++;
 			led_on();
-			if(cnt==16){// Enable UsageFault and division-by-zero trap
+			if(cnt==6){// Enable UsageFault and division-by-zero trap
 				SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;    // Enable UsageFault
 				SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk;          // Trap divide-by-zero
                 int a=(1/0);

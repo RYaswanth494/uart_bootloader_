@@ -76,7 +76,6 @@ void NMI_Handler(void)
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
    while (1)
   {
-		NVIC_SystemReset();
 
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -108,7 +107,6 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
-		NVIC_SystemReset();
 
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
@@ -125,7 +123,6 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
-		NVIC_SystemReset();
 
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
@@ -142,7 +139,6 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
-		NVIC_SystemReset();
 
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }
@@ -156,7 +152,6 @@ void SVC_Handler(void)
   /* USER CODE BEGIN SVCall_IRQn 0 */
 
   /* USER CODE END SVCall_IRQn 0 */
-	NVIC_SystemReset();
 
   /* USER CODE BEGIN SVCall_IRQn 1 */
 
@@ -171,7 +166,6 @@ void DebugMon_Handler(void)
   /* USER CODE BEGIN DebugMonitor_IRQn 0 */
 
   /* USER CODE END DebugMonitor_IRQn 0 */
-	NVIC_SystemReset();
 
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
 
@@ -186,7 +180,6 @@ void PendSV_Handler(void)
   /* USER CODE BEGIN PendSV_IRQn 0 */
 
   /* USER CODE END PendSV_IRQn 0 */
-	NVIC_SystemReset();
 
   /* USER CODE BEGIN PendSV_IRQn 1 */
 
