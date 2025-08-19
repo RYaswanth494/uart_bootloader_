@@ -48,9 +48,9 @@ int main(){
 	LED_INIT();
 	STATUS_LEDS_APP_OR_BOOT_INIT();
 	  if (RCC->CSR & RCC_CSR_IWDGRSTF) {
-		  RY_GPIOC->ODR.BITS.ODR13=1;
+		  RY_GPIOC->ODR.BITS.ODR13=1;//indicating application require need to update
 		   RCC->CSR |= RCC_CSR_RMVF;
-		   while(1){
+		   while(1){ 
 
 		   }
 	  }
